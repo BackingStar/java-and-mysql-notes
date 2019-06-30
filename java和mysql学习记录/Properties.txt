@@ -1,0 +1,203 @@
+MAP
+  |--Hashtable
+        |-Properties:
+Properties 集合：
+特点：
+  1、该集合中的键和值都是字符串类型
+  2、集合的数据可以保存到流中，或者从流中获取
+
+ 通常该集合用于操作以键值对形式存在的配置文件（xml、数据库等）
+
+ public static void main(String[] args){
+             Properties();
+         
+
+ 
+ }
+ public static void Properties(){
+         Properties prop=new Properties();
+       //存储元素
+         prop.setProperty("zhangsan","30");
+
+         prop.setProperty("lisi","31");
+
+         prop.setProperty("wangwu","36");
+
+         prop.setProperty("zhaoliu","20");
+         //修改元素
+           prop.setProperty("wangwu","26");
+        //取出所有元素
+        Set<String> names=prop.stringPropertyName();
+        for(String name: names){
+            String value=prop.getProperty(name);
+            System.out.println(name+":"+value);
+
+ }
+     //想要将这些集合中的字符串键值信息持久的存储到文件中
+     //需要关联流
+  //存储的文件中，#键代表注释
+    FileOutputStream fos=new FileOutputStream("info.txt");
+    prop.store(fos,"name+age");//引号内的可以表示一个注释，但是不能用中文
+    fos.close();
+}
+    //  加载文件========（主函数同上）
+public static void Properties(){
+         Properties prop=new Properties();
+     //集合中的数据来自一个文件
+     //注意：必须要保证该文件中的数据是键值对
+     //需要使用读取流
+          FileInputStream fis=new FileInputStream("info.txt");
+          prop.load(fis);
+          prop.list(System.out);
+}
+ load 方法原理：
+ public static void myLoad() throws IOException{
+        Properties prop=new properties();
+        BufferedReader bufr =new BufferedReader(new FileReader("info.txt"));  
+         String line=null;
+          while(line=bufr.readLine()){
+              if(line.startWith("#"))
+                  continue;
+              String[] arr=line.split("=");
+           prop.setProperty(arr[0],arr[1]);
+            
+            }  
+          prop.list(System.out);
+          bufr.close();
+   
+ }
+
+=============================
+//对已有的配置文件中的信息进行修改
+/* 
+* 读取这个文件
+*并将这个文件中的键值数据存储在集合中
+*在通过集合对数据对进行修改
+*在通过流将修改后的数据存储在文件中
+*/
+ public static void test() throw IOException{
+        //读取这个文件
+         File file =new File("info.txt");
+         if（！file.exists()）{
+             file.creatNewFile();
+ } 
+          FileReader fr=new FileReader(file);
+          //创建集合存储配置信息
+          Properties prop=new Properties();
+           //将流中信息存储在集合中
+            prop.load(fr);
+            prop.setProperty("wangwu","16");
+          FileWriter fw=new FileWriter(file);
+          //存储在文件中
+          prop.store(fw," ")；
+           fw.close();
+            fr.close();
+ 
+ }
+
+===========================================
+定义功能：获取一个应用程序运行的次数，如果超过5次，给出使用次数已到，请注册的提示。
+
+ 思路：1、应该有计数器
+   每次程序启动一次都需要计算一次，并且是在原有的次数上进行计数
+    2、计数器是一个变量。
+   每次程序运行，计数器就运行，而且应该是同一个计数器，计数器就要保存到磁盘中 
+   3、如何使用这个计数器呢
+  首先，程序启动时，应该先读取这个用于记录计数器信息的配置文本
+  获取上一次的计数器次数，并进行使用次数的判断
+  其次，对该次数进行自增，并自增后的次数重新存储到配置文件中。
+ 4、文件中的信息该如何进行存储并体现
+名字对应值，使用键值对，可以用映射关系MAp集合搞定，但是有需要读取硬盘上的数据，所以map+io=properties
+
+ public static void main(String[] args){
+      getAppCount();
+ }
+ punlic static void getAppCount(){
+        //将配置文件封装成File对象
+       File confile=new File("count.properties"); 
+       if(!confile.exists()){
+           confile.creatNewFile();
+      
+          }
+         FileInputStream fis=new FileInputStream(confile);
+          Properties prop=new Properties();
+          prop.load(fis);
+        //从集合中通过键获取次数//没有打开时是字符串
+         String value=prop.getProperty("time");
+          int count=0;
+         if(value!=null){
+            count=Integer.parseInt(value);//将字符串转成int类型
+            if(count>=5){  
+                throw new Runtime("使用次数超过5次，请注册！");
+              }
+         
+          }
+          count++;
+         // 将改变后的次数存储到集合中
+          prop.setProperty("time",count+"");
+           FileOutputStream fos=new FileOutputStream(confile);
+           prop.store(fos,"");
+           fos.close();
+           fis.close();
+         
+}
+
+//获取指定目录下，指定扩展名的文件（包含子目录中的）；
+ 这些文件的绝对路径写入到一个文本文件中。
+ 简单说，就是建立一个指定扩展名的文件的列表。
+
+ 思路：
+1 必须进行深度遍历。
+2. 要在遍历的过程中进行过滤，将符合条件的内容存储到容器中
+3.对容器中的内容进行遍历并将绝对路径写入到文件中
+
+public static void main(String[] args)throws IOExpection {
+         File dir=new File("e:\\java0331");
+         FilenameFilter filter=new FilenameFilter(){
+            public boolean accept(File dir,String name){
+                     return name.endsWith(".java");
+             }
+          };
+          List<File > list=new ArrayList<File>();
+           getFiles(dir,filter,list);
+           File aimFile=new File(dir,"javalist.txt");//当前目录下的子目录
+           writeToFile(list,aimFile);    
+}
+ public static void getFiles(File dir,FilenameFilter filter,List<File> list){
+     File[] files=dir.listFiles();
+     for(File file:files){
+          if(file.isDirectory){
+             //递归
+             getFiles(file,filter,list);
+              }else{
+      //对遍历到的文件进行过滤器的过滤，将符合条件的File对象存储到List集合中
+               if(filter.accept(dir,file.getMame())){
+                    list.add(file);
+}
+              }
+
+      }
+
+public static void writeToFile(List<File> list,File aimFile){
+          BufferedWriter bufw=null;
+          try{
+              bufw=new BufferedWriter(new FileWriter(aimFile));
+              for(File file: list){
+                  bufw.write(file.getAbsolutePath());
+                  bufw.newLine();
+                  bufw.flush();
+                }
+     }catch（IOException e）{
+             throw new RuntimeException("写入失败"); 
+
+       }finally{
+           
+          if(bufw!=null)
+             try{    
+                 bufw.close();
+         }catch{IOException e}
+               throw new RuntimeException("关闭失败");
+        }
+
+ }
+

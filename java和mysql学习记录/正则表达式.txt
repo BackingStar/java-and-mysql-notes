@@ -1,0 +1,289 @@
+正则表达式
+
+正则表达式用于操作字符串数据
+通过一些特定的符号来体现的
+所以我们为了掌握正则表达式，必须要学习一些符号
+
+虽然简化了，但是阅读性差
+
+
+
+需求：
+ 定义一个功能对QQ号进行校验
+ 要求：长度是5-15 只能是数字  0不能开头
+
+public class RegexDemo{
+
+ public static void main(String[] args){
+       String qq="12345678";
+        String regex="[1-9][0-9]{4,14}";//正则表达式
+                   // 首位 次位 重复4-14次
+      boolean  b=qq.matches(regex);
+      System.out.println(qq+":"+b);
+  }
+}
+
+
+
+2...常见的规则
+
+^ 反的意思  行的开头
+X？  x,一次或一次也没有
+X*   x,零次或多次
+X+  x,一次或者多次
+X{n}  x,恰好n次
+X{n,}  x,至少n次
+X{n,m}  x,至少n次，但不超过m次
+
+String str="aooob";
+String regex="ao+b";//a和b之间有一次或者多次o
+String  regex="ao{4,}b";a和b之间有4次以上o
+boolean b=str.mathes(regex);
+System.out.println(b);
+
+3...正则表达式的常见操作
+  （1） 匹配
+        其实是用的就是String 类中的matches方法
+  
+  （2） 切割
+         其实就是String 类中的split方法  
+ 捕获组可以从左到右计算 开括号来编号。例如 在表达式（(A)(B(C))）中，存在四个这样的组：
+  1..  （(A)(B(C))） 
+  2.. \A
+  3.. (B(C))
+  4..(C)   
+
+  （3） 替换
+         其实是String 类中的replaceAll()方法
+
+  （4） 获取
+
+   将正则规则进行对象的封装 
+    Pattern p=Pattern.compile("a*b");
+
+   //通过正则对象的matcher方法字符串相关联，获取要对字符串操作的匹配器对象    Matcher m=p.matcher("aaaaab");
+
+  //通过Matcher匹配器对象的方法对字符串进行操作
+    boolean b=m.matches();
+
+////////////////////////////////////////////////////////////////
+public class RegexDemo{
+
+  public static void main（String[] args）{
+      functionDemo_1();   
+  
+
+  }
+      //演示匹配
+   public static void functionDemo_1(){
+          //演示手机号码是否正确
+       String tel="15900001111";
+       String regex="1[358][0-9]{9}";  1 3/5/8  0-9重复9次
+      //或者 String regex="1[358]\\d{9}";   \\d 代表数字
+        boolean b=tel.matches(regex);
+       System.out.println(tel+":"+b);
+   }
+
+   //演示切割
+ public static void functionDemo_2(){
+   （1） String str="zhangsan   xiaoqiang   zhaoliu";
+       String[] name= str.split(" +");//可以以多个空格 来分割
+
+    （2）String str="zhangsan.xiaoqiang.zhaoliu";
+       String[] name= str.split("\\.");//可以以 . 来分割
+    
+      (3) String str="zhangsantttxiaoqiangmmmmmmmzhaoliu";
+       String[] name= str.split("(.)\\1+");//可以以相同字符组来分割
+  使用（） 来进行复用封装，即为组
+
+       for(String name: names){
+            System.out.println(name);
+         }
+ 
+ }
+
+
+  //演示替换
+public static void functionDemo_3(){
+     String str="zhangsantttxiaoqiangmmmmmmmzhaoliu";
+      str=str.replaceAll("(.)\\1+","$1");//将相同的字符替换成一个
+                                         //$是将前面的字符拿过来
+      System.out.println(str);//输出zhangsantxiaoqiangmzhaoliu
+    
+     String str="15800001111";//158****1111
+     tel=tel.replaceAll("(\\d{3})\\d{4}(\\d{4})","$1****$2");
+    System.out.println(tel);//输出158****1111
+
+ }
+
+ //演示获取
+ public static void functionDemo_4(){
+     String str="da jia hao ,ming tian bu fang jia!";
+     String regex="\\b[a-z]{3}\\b"; //连续3个字母且前后都有单词边界
+      //1.将正则封装成对象
+     Pattern p=Pattern.compile(regex);
+      //2.通过正则对象获取匹配器信息
+     Matcher m=p.matcher(str);
+    //使用Matcher对象的方法对字符串进行操作
+     //既然要获取三个字母组成的单词
+   // 查找：find();
+
+    while(m.find()){
+        System.out.println(m.group());//获取匹配的子序列
+        System.out.println(m.start()+":"+m.end());//获取子序列的起始位置
+    }
+ 
+  }
+}
+
+
+
+====================================================
+正则练习：
+1..治疗口吃：我我我...要要要要....学学学...编编编..程程程....
+2.对ip地址排序 192.168.10.34  127.0.0.1 3.3.3.3 105.40.11.55
+3..对邮件地址校验  abc1@sina.com.cn
+
+
+
+public class Test{
+
+public static void main(String[] args){
+
+    test_1();
+    test_2();
+    test_3();
+      
+}
+
+public static void test_1(){
+    
+    String str="我我我...要要要要....学学学...编编编..程程程....";
+    
+// 1.将字符串中的.去掉，用替换
+     str=str.replaceAll("\\.+","");
+ //2.替换叠词
+     str=str.replaceAll("(.)\\1+","$1");
+     System.out.println(str);
+
+ }
+ 
+ public static void test_2(){
+  String ip_str="192.168.10.34  127.0.0.1 3.3.3.3 105.40.11.55";
+
+  //为了让ip可以按照字符串顺序排序比较，只要让ip的每一段的位数相同
+  //所以，补零，按照每一位所需做多0进行补充，每一段都加两个0
+
+   ip_str=ip.replaceAll("(\\d+)","00$1");//每一段都加两个0
+
+ //然后每一段都保留数字3位
+  
+   ip_str=ip_str.replaceAll("0*(\\d{3})","$1");//每一段保留后3个数字
+ 
+ //将Ip地址切出
+ String[] ips=ip_str.split(" +");//以空格或者多个空格切割
+ 
+TreeSet<String> ts=new TreeSet<String>();//用TreeSet进行排序
+ 
+ for(String ip:ips){
+   ts.add();
+  }
+  
+  for(String ip: ts){
+   System.out.println(ip.repalceAll("0*(\\d+)","$1"));//将前面的0去掉
+  }
+
+ }
+
+
+ public static void test_3(){
+   String mail="abc1@sina.com.cn";
+ String regex= "[a-zA-Z0-9]+@[a-zA-Z0-9]+(\\.[a-zA-Z]{1,3})+)";//匹配器
+   //regex="\\w+@\\w+(\\.\\w+)+";1@1.1
+ boolean b=main.matches(regex);
+   System.out.println(main+":"+b);
+ 
+ }
+ 
+ }
+
+
+
+=============================================
+网页爬虫：
+
+  其实就是一个程序用于在互联网中获取符合指定规则的数据
+
+  爬取邮箱地址：
+
+ public class RegexTest(){
+
+  public static void main(String[] args) throws IOException{
+      List<String>  list=getMails();
+      for(String mail: list){
+           System.out.println(mail):
+       }
+  }
+
+  public static List<String> getMails() throws IOException{
+ 
+    //1.读取源文件
+   BufferedReader bufr=new BufferedReader(new FileReader("c:\\ mail.html"));
+  
+   //2.对读取的数据进行规则的匹配，从中获取符合规则的数据
+    String mail_regex="\\w+@\\w+(\\.\\w+)+"；
+ 
+     Lisr<String> list=new ArrayList<String>();//建立list集合
+
+     Pattern p=Pattern.compile(mail_regex);//获取正则对象
+      
+      String line=null;
+   while((line=bufr.readLine())!=null){
+        Matcher m=p.matcher(line);// 正则与字符串相关联
+        while(m.find()){
+            //将符合规则的数据存储到集合中
+             list.add(m.group());
+         }
+    }
+     return  list;
+    
+}
+ }
+
+
+从网页中获取
+
+public class RegexTest_2(){
+
+  public static void main(String[] args) throws IOException{
+      List<String>  list=getMails();
+      for(String mail: list){
+           System.out.println(mail):
+       }
+  }
+
+  public static List<String> getMails() throws IOException{
+ 
+    //1.读取源文件
+   URL url=new URL("http://192.168.10.100:8080/myweb/mail.html");
+    BufferedReader bufIn=newBuffered(new InputStreamReader(url.openStream()));
+  
+   //2.对读取的数据进行规则的匹配，从中获取符合规则的数据
+    String mail_regex="\\w+@\\w+(\\.\\w+)+"；
+ 
+     List<String> list=new ArrayList<String>();//建立list集合
+
+     Pattern p=Pattern.compile(mail_regex);//获取正则对象
+      
+      String line=null;
+   while((line=bufIn.readLine())!=null){
+        Matcher m=p.matcher(line);// 正则与字符串相关联
+        while(m.find()){
+            //将符合规则的数据存储到集合中
+             list.add(m.group());
+         }
+    }
+     return  list;
+    
+}
+ }

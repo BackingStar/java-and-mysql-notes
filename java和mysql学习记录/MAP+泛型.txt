@@ -1,0 +1,39 @@
+Map<key,value>
+Map<String,Integer> map=new Map<String,Integer>();
+Map集合 
+是在有映射关系的时候，可以优先考虑，尤其是在有很多对应关系的时候
+在查表法中的应用比较常见...
+
+工程应用的时候 
+我们可以在集合里面 嵌套集合...很实用
+map.put("星期一"，Set<student>);相当于一个键里面包含很多的值
+
+
+1、泛型:<>
+  泛型比object更加安全
+一般用于数据引用类型不确定的时候...
+
+2、泛型方法：
+直接吧泛型定义在类名上.
+ public<W> void show(W str){}
+ 静态方法  public static <W> void show(W str){}
+3、泛型接口：
+public interface Inter<W>{
+   public void show (W str){}
+}
+两种实现接口的方式，根据实际情况来使用：
+1、public Dema implements Inter<String>{
+         public void show (String str){}
+ }使用的时候：Dema in=new Dema();
+              in.show("abc");
+2、public Dema<Q> implements Inter<Q>{
+         public void show(Q str){}
+}使用的时候：Dema<Integer> in=new Dema<Integer>();
+              in.show(5);
+ 4、泛型 通配符：？ 
+   用于不确定传入的是什么类型。。
+ 泛型限定 上限 <？extends Person> 只允许Person和他的子类进来，其他的不能进来
+         下限 <? super Student>  只允许Student和他的父类进来
+5、一般上限使用的较多。。
+一般在存储元素的时候都是用上限，因为这样取出都是按照上限类型来算的，不会出现安全隐患
+通常对集合中的元素进行取出操作的时候 ，使用下限

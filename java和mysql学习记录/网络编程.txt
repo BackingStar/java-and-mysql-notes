@@ -1,0 +1,681 @@
+1..域名解析
+首先是访问本机的域名，如果没有，然后在访问网页的域名
+
+网上用名字查找网页的时候，首先是在域名中查找（即DNS），然后将IP地址给了网页再去寻找...
+
+public class IPDema{
+   public static void main(String[] args){
+     //获取本地主机ip地址对象
+      InetAddress ip=InetAddress.getLocalHost();
+    //获取其他主机的ip地址对象
+      ip=InetAddress.getByName("192.168.1.0");//InetAddress.getByName("my_think");//即可根据IP地址获取，又可根据主机名获取
+      System.out.println(ip.getHostAddress());//获取IP地址
+      System.out.println(ip.getHostName());//获取主机名
+
+
+   }
+}
+
+=========================================================
+2..UDP发送端
+public class UdpSendDema{
+  public static void mian(String[] args){
+       System.out.println("发送端启动...");
+      /**创建UDP传输的发送端
+     思路：1.建立UDP的socket服务
+           2.将要发送的数据封装到数据包中
+           3.通过UDP的socket服务将数据包发送出去
+           4.关闭socket服务。
+      */
+      //1.udpsocket服务，使用DatagramSocket对象
+        DatagramSocket ds=new DatagramSocket(8888);
+      //2.将要发送的数据封装到数据包中
+         String str="udp传输演示：哥们来了";
+         byte[] buf=str.getBytes();
+         DatagramPacket dp=new DatagramPacket(buf,buf.length,InetAddress.getByName("192.168.1.0"),10000);
+       //3.通过udp的socket服务将数据包发送出去，使用send方法
+        ds.send(dp);
+
+       //4.关闭资源
+         ds.close();
+
+
+ 
+}
+}
+3..UDP接收端
+public class UdpReceive{
+  puclic static void main(String[] args){
+       System.out.println("接收端启动...");
+       /**创建UDP接收端
+      思路：1，建立udp的socket服务，因为是要接收数据，必须要明确一个端口号
+            2，创建数据包，用于存储接收到的数据。方便用数据包对象的方法解              析这些数据
+            3.使用socket服务的receive方法将接受到的数据存储到数据包中
+            4，通过数据包的方法解析数据包中的数据
+            5，关闭资源
+      */
+       //1.建立udp socket服务
+       DatagramSocket ds=new DatagramSocket(10000);//端口号
+       //2.创建数据包
+       byte[] buf=new byte[1024];
+       DatagramPacket dp=new DatagramPacket(buf,buf.length);
+       //3.使用接收方法将数据存储到数据包中
+        ds.receive(dp);
+      //4.通过数据包对象的方法，解析其中的数据，比如，地址，端口，数据内容
+       String ip=dp.getAddress().getHostAddress();
+       int port=dp.gerPort();
+       String text=new String(dp.getData();0,dp.getLength());
+        System.out.println(ip+":"+port+":"+text);
+       //5.关闭资源
+          ds.close();
+   }
+}
+
+4..聊天程序..
+
+ //发送端
+public class Send implements Runnable{
+    private DatagramSocket  ds;
+    public Send(DatagramSocket ds){
+         this.ds=ds;
+    }
+    public void run(){
+         try{
+            BufferedReader bufr=new BufferedReader(new InputStreamReader(System.in));
+             String line=null;
+            while((line=bufr.readLine())!=null){
+                byte[] buf=line.getBytes();
+                DatagramPacket dp=new DatagramPacket(buf,buf.length,InetAddress.getByName("192.168.1.100"),10001);//固定我聊，即只能我接收
+             //如果改为192.168.1.255则是广播，大家都能一起聊，即群聊
+                ds.send(dp);
+                 if("886".equals(line))
+                      break;
+             }
+             ds.close();
+         }catch(Exception){}
+         
+     }
+
+}
+  // 接收端
+public class Receive implements Runnable{
+      private DatagramSocket ds;
+      public Receive(DatagramSocket ds){
+         this.ds=ds;
+      }
+       puclic void run(){
+           try{
+               while(true){
+                  byte[] buf=new byte[1024];
+                  DatagramPacket dp=new DatagramPacket(buf,buf.length);
+                  ds.receive(dp);
+                  String ip=dp.getAddress().getHostAddress();
+                  int port=dp.getPort();
+                 String text=new String(dp.getData(),0,dp.getLength());
+                 System.out.println(ip+":"+port+":"+text);
+
+                  if(text.equals("886")){
+                     System.out.println(ip+"....退出聊天室");
+                  }
+               }
+
+           }catch(Exception e){}
+       }
+}
+
+public class ChatDema throw IOException{
+      public static void main(String[] args){
+
+            DatagramSocket send=new DatagramSocket();
+            DatagramSocket receive=new DatagramSocket(10001);
+            new Thread(new Send(send)).start();
+            new Thread(new Receive(receive)).start();
+      }
+ }
+
+5....
+TCP客户端
+public class Client{
+    public static void main(String[] args){
+      //客户端发数据到服务端
+       TCP传输，客户端建立的过程
+        1.创建tcp客户端的socket服务，使用的是socket对象
+          建议该对象一创建就明确目的地，要连接的主机
+        2.如果连接建立成功，说明数据传输通道已建立
+            该通道就是socket流，是底层建立好的。既然是流，说明这里既有输入又有输出。
+           想要输入 或者输出流对象。可以找socket来获取
+           可以通过getOutputStream()和getInputStream()来获取两个字节流
+         3.使用输出流，将数据写出
+         4.关闭资源
+
+     //创建客户端socket服务
+     Socket socket=new Socket("192.168.1.100",10002);
+    //获取socket流中的输出流
+      OutputStream out=socket.getOutputStream();
+     //使用输出流将指定的数据写出去
+       out.write("tcp演示，哥们又来了".getBytes());
+           //关闭资源
+         socket.close();
+   
+
+ }
+  
+ }
+
+ 6..TCP服务端
+public class Server{
+
+ public static void main(){
+ //服务端接收客户端发送来的数据，并打印在控制台上
+/* 建立tcp服务端的思路：
+   1.创建服务端socket服务，通过ServerSocket对象
+   2.服务端必须对外提供一个端口，否则客户端无法连接
+   3.获取连接过来的客户端对象
+   4.通过客户端对象获取socket流读取客户端发来的数据
+      并打印在控制台上
+   5.关闭资源，关客户端，关服务端
+
+*/
+    //1.创建服务端对象
+     ServerSocket ss=new ServerSocket(10002);
+   //2.获取连接过来的的客户端对象
+    Socket s=ss.accept();
+    String ip=s.getAddress().getHostAddress();
+  //3.通过socket对象输入流，要读取客户端发来的数据
+    InputStream in=s.getInputStream();
+    byte[] buf=new byte[1024];
+    int len=in.read(buf);
+    String text=new String(buf,0,len);
+    System.out.println(ip+":"+text);
+   //4.关闭资源
+     s.close();
+     ss.close();//服务端不应该被关闭的，此处只用一次
+
+ }
+}
+
+
+.............................................................
+7..
+  TCP客户端与服务端的交互
+
+public class Client{
+    public static void main(String[] args){
+   //创建客户端socket服务
+     Socket socket=new Socket("192.168.1.100",10002);
+    //获取socket流中的输出流
+      OutputStream out=socket.getOutputStream();
+     //使用输出流将指定的数据写出去
+       out.write("tcp演示，哥们又来了".getBytes());
+   
+    //读取服务端返回的数据，使用socket读取流
+    InputStream in=socket.getInputStream();
+    byte[] buf=new byte[1024];
+     int len=in.read(buf);
+     String text=new String(buf,0,len);
+     System.out.println(text);
+  
+  
+           //关闭资源
+         socket.close();
+   
+
+ }
+  
+ }
+
+public class Server{
+
+ public static void main(){
+ //1.创建服务端对象
+     ServerSocket ss=new ServerSocket(10002);
+   //2.获取连接过来的的客户端对象
+    Socket s=ss.accept();
+    String ip=s.getAddress().getHostAddress();
+  //3.通过socket对象输入流，要读取客户端发来的数据
+    InputStream in=s.getInputStream();
+    byte[] buf=new byte[1024];
+    int len=in.read(buf);
+    String text=new String(buf,0,len);
+    System.out.println(ip+":"+text);
+
+   
+   // 使用客户端socket对象的输出流给客户端返回数据
+
+   OutputStream out=s.getOutputStream();
+    out.write("收到".getBytes());
+
+
+   //4.关闭资源
+     s.close();
+     ss.close();//服务端不应该被关闭的，此处只用一次
+
+ }
+}
+
+========================================================
+8....
+
+ 客户端与服务端的大小写转换
+
+ 要求：
+    客户端输入字母数据，发送给服务端
+     服务端收到后显示在控制台上，并将该数据转成大写返回给客户端
+    直到客户端输入over，转换结束
+
+客户端：思路：
+      1.需要有socket端点
+      2.客户端的数据源：键盘
+      3.客户端的目的：socket
+      4.接受服务端的数据，源：socket
+      5.将数据显示再打印出来：目的：控制台
+      6.在这些源操作的数据，都是文本数据
+
+ public class TransClient{
+   public static void main(String[] args){
+       //1.创建socket客户端对象
+       Socket s=new Socket("192.168.1.100",10004);
+       //2.获取键盘录入
+       BufferedReader bufr=
+             new BufferedReader(new InputStreamReader(System.in));
+      //3.Socket输出流
+//new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+      
+       PrintWriter out=new PrintWriter(s.getOutputStream(),true);//使用true可以刷新一次
+     
+        //4.socket输入流，读取服务端返回的大写数据
+         BufferedReader bufIn=new BufferedReader(new InputStreamReader(s.getInputStream()));
+         
+
+         String line=null;
+         while((line=bufr.readLine())!=null){
+
+             if("over".equals(line))
+                  break;
+             out.println(line);
+
+             //读取服务端发回的一行大写数
+             String upperStr=bufIn.readLine();
+             System.out.println(upperStr);
+         }
+         
+           s.close();
+ 
+     }
+
+ }
+
+ 服务端：
+ 思路：1.ServerSocket服务
+       2.获取socket对象
+      3.源：socket，读取客户端发来的需要转换的数据
+      4.目的：显示在控制台上
+      5.将数据转换成大写.
+
+ public class TransServer{
+     public static void main(String[] args){
+       //1.serversocket服务
+       ServerSocket ss=new ServerSocket(10004);
+
+      //2.获取socket对象
+       Socket s=ss.acccept();
+       String ip=s.getInetAddress().getHostAddress();
+       System.out.println(ip+"....connected");
+      //3.获取socket读取流，并装饰
+      BufferedReader bufIn=new BufferedReader(new InputStreamReader(s.getInputStream()));
+      //4.获取socket的输出流，并装饰
+      
+        PrintWriter out=new PrintWriter(s.getOutputStream,true);
+        
+        String line=null;
+        while((line=bufIn.readLine())!=null){
+            out.println(line.toUpperCase());   
+
+        }
+         s.close();
+         ss.close();
+   
+     }
+ }
+
+
+===================================================
+9...
+ 上传文件
+
+public class UploadClient{
+   public static void main(String[] args){
+       Socket s=new Socket("192.168.1.100",10005);
+       BufferedReader bufr=new BufferedReader(new FileReader("client.txt"));
+        PrintWriter out=new PrintWriter(s.getOutputStream(),true);
+       String line=null;
+       while((line=bufr.readLine())!=null){
+            out.println(line);
+            
+       } 
+        s.shutdownOutput();//告诉服务器，客户端写完了。。   不用在等待了       
+
+       BufferedReader bufIn=new Buffered(new InputStreamReader(s.getInputStream())); 
+        String str=bufIn.readLine();
+        System.out.println(str);
+       
+
+   }
+ }
+
+ public class UploadServer{
+     public static void main(String[] args){
+         ServerSocket ss=new ServerSocket(10005);
+         Socket s=ss.accept();
+          System.out.println(s.getInetAddress().getHostAddress()+"...connected");
+          BufferdReader bufIn=new BufferedReader(new InputStreamReader(s.getInputStream()));
+          BufferedWriter bufw=new BufferWriter(new FileWriter("server.txt"));
+           String line=null;
+           while((line=bufIn.readLine())!=null){
+                  bufw.write(line);
+            }
+           PrintWriter out=new PrintWriter(s.getOutputStream(),true);
+           out.println("上传成功");
+            bufw.close();
+            s.close();
+            ss.close();
+    }
+  }
+
+
+==============================================
+10..
+上传图片
+ 
+Public class UpPicClient{
+    public static void main(){
+       //1.创建客户端Socket.
+       Socket s=new Socket("192.168.1.100",10006);
+       //2.读取客户端上要上传的文件
+       FileInputStream fis=new FileInputStream(c:\\0.bpm);
+      //3.获取socket输出流，并将图片数据发送给服务端
+      OutputStream out=s.getOutputStream();
+       
+       byte[] buf=new byte[1024];
+        int len =0;
+      while((len=fis.read(buf)!=-1)){
+            out.write(buf,0,len);
+     }
+
+     //告诉服务端说：这边的数据发送完毕，让服务端停止读取
+      s.shutdownOutput();
+
+    //读取服务端发回的内容
+    InputStream in=s.getInputStream();
+    byte[] bufIn=new byte[1024];
+
+   int lenIn=in.read(buf);
+    String text=new String(buf,0,lenIn);
+     System.out.println(text);
+      fis.close();
+       s.close();
+     }
+}
+
+public class UpPicServer{
+  public static void main(String[] args) throws IOException{
+        //创建tcp的socket服务端
+        ServerSocket ss=new ServerSocket(10006);
+        //获取客户端
+        Socket s=ss.accept();
+         String ip=s.getInetAddress().getHostAddress();
+          System.out.println(ip+"...connneted");
+         //读取客户端发来的数据
+         InputStream in=s.getInputStream();
+         //将读取的数据存储到一个文件中
+        File dir=new File("c:\\pic");
+        if(!dir.exists()){
+           dir.mkdirs();
+         }
+        File file=new File(dir,ip+".bmp");
+        FileOutputStream fos=new FileOutputStream("server.bmp");
+        byte[] buf=new byte[1024];
+        int len=0;
+        while((len=in.read(buf)!=-1)){
+              fos.write(buf,0,len);
+       
+         }
+          //获取socket输出流，将上传成功字样发给客户端
+          OutputStream out=new OutputStream();
+           out.write("上传成功".getBytes());
+           fos.close();
+           s.close();
+           ss.close();
+
+  }
+
+}
+
+
+10...
+ 图片上传多线程
+ 服务端可以接收多个客户端的图片
+
+public class UpPicServer{
+  public static void main(String[] args) throws IOException{
+        //创建tcp的socket服务端
+        ServerSocket ss=new ServerSocket(10006);
+
+        while(true){
+              socket s=ss.accept();
+               new Thread(new UploadTask(s)).start(); 
+         }
+   }
+}
+
+public class UploadTask implements Runnable{
+        
+     private Socket s;
+     public UploadTask(Socket s){
+           this.s=s;
+      }
+     public void run(){
+          int count=0;
+
+         //获取客户端
+        Socket s=ss.accept();
+         String ip=s.getInetAddress().getHostAddress();
+          System.out.println(ip+"...connneted");
+
+       try{
+         //读取客户端发来的数据
+         InputStream in=s.getInputStream();
+         //将读取的数据存储到一个文件中
+        File dir=new File("c:\\pic");
+        if(!dir.exists()){
+           dir.mkdirs();
+         }
+        File file=new File(dir,ip+".bmp");
+         
+        while(file.exist()){
+              file=new File(dir,ip+"("+(++count)+")"+".bmp"); 
+        }
+        FileOutputStream fos=new FileOutputStream("server.bmp");
+        byte[] buf=new byte[1024];
+        int len=0;
+        while((len=in.read(buf)!=-1)){
+              fos.write(buf,0,len);
+       
+         }
+          //获取socket输出流，将上传成功字样发给客户端
+          OutputStream out=new OutputStream();
+           out.write("上传成功".getBytes());
+           fos.close();
+           s.close();
+           } catch(IOException e){}
+          }
+       
+       
+
+  }
+
+=============================================================
+11..
+浏览器和服务器
+
+
+最常见的客户端： 浏览器：IE
+最常见的服务端：服务器：Tomcat
+
+为了了解其原理：
+
+1.自定义服务端：
+使用已有的客户端IE，了解一下客户端给服务端发了什么请求？
+发送的请求是：
+ 
+GET/HTTP/1.1   请求行 请求方式/myweb/1.html 请求的资源路径 http协议版本
+请求消息头.属性名：属性值
+Accept: image/gif,
+Accept:*/*
+Accept-Langrage:zh-cn,zu;q=0.5
+Accept-Encoding:gzip,deflate
+User-Agent:Mozilla/4.0
+Host:192.168.1.100:9090
+//Host:www.huyouni.com:9090
+Connection:Keep-Alive
+
+public class Tomcat{
+
+   public static void main(String[] args){
+         ServerSocket ss=new ServerSocket(9090);
+          Socket s=ss.accept();
+         System.out.println(s.getInetAddress().getHostAddress()+"...connected");
+          InputStream in=s.getInputStream();
+          byte[] buf=new byte[1024];
+          int len=in.read(buf);
+          String text=new String(buf,0,len);
+         System.out.println(text);
+  
+          //给客户端一个反馈信息
+          PrintWriter out=new PrintWriter(s.getOutputStream(),true);
+          out.println("<font color='red',size='7'>欢迎光临</font>");
+          
+          s.close();
+          ss.close();
+    }
+}
+
+
+
+puclic classMyBrower{
+
+  public static void main(String[] args){
+    
+      Socket s=new Socket("192.168.1.100",8080);//1
+      
+       //模拟浏览器，给tomcat服务端发送符合http协议的请求消息
+     PrintWriter out=new PrintWriter(s.getOutputStream(),true);
+      out.println("GET/myweb/1.html HTTP/1.1");
+      out.println("Accept:*/*");
+      out.println("Host:192.168.1.100:8080");
+      out.println("Connection: close");
+      out.println();
+      out.println();       //2
+
+
+      InputStream in=s.getInputStream();
+      byte[] buf=new byte[1024];
+      int len=in.read(buf);
+      String str=new String(buf,0,len);
+      System.out.println(str);
+      s.close();
+
+  }
+}
+
+//服务端发回应答消息
+
+ HTTP/1.1 200 ok   //应答行，http的协议版本 应答状态码 应答状态描述信息
+
+应答消息属性信息。属性名：属性值
+ server:Apache-Coyote/1.1
+ ETag:W/"199-1323480176984"
+ Last-Midifies: Sat,10 Dec 2011 01:22:56 GMT
+ Content-Type: tezt/html
+ Content-Length:199
+Data :Fri,22 May 2102 07:51:39 GMT
+ Connection: close
+
+//空行
+//应答体
+
+<html>
+   <head>
+      <title>这是我的网页</title>
+   </head>
+   <body>
+       <h1>欢迎光临</h1>
+       <font size='5' color="red">这是一个tomcat服务器中的资源，是一个html网页。</font>
+     </body>
+</html>
+
+
+
+=================================================================
+12..
+ URL   统一资源定位符
+
+调用URL解析应答属性头。。。使用浏览器就自动的解析了应答属性头
+
+public class URLDema{
+    public static void main(String[] args){
+        String str_url="http://192.168.1.100:8080/myweb/1.html";
+         URL url=new URL(str_url);
+   //System.out.println("getprotocol:"+url.getProtocol());
+  // System.out.println("getHost:"+url.getHost());
+  // System.out.println("getport:"+url.getPort());
+  //System.out.println("getFile:"+url.getFile());
+  //System.out.println("getPath:"+url.getPath());
+  //System.out.println("getQuery:"+url.getQuery());
+
+        InputStream in=url.openStream();
+
+
+ //获取url对象的Url连接对象。将连接封装成了对象：java中内置的可以解析的具    体协议的对象+socket
+       URLConnection conn=url.openConnection();//1
+      String value= conn.getHeaderField("Content-Type");//返回指定头字段的值
+        InputStream in=conn.getInputStream();//2
+//上面1.2两句就是相当于 InputStream in= url.openStream();
+
+        byte[] buf=new byte[1024];
+         int len=in.read(buf);
+         String text=new String(buf,0,len);
+         System.out.println(text);
+         in.close();
+
+
+  }
+ }
+
+有了这个URL ，上面的那个浏览器的 1--2之间的内容就可以换成这个URL
+
+
+
+
+
+==================================
+
+13...
+网络结构
+
+1.C/S： client/server
+
+ 特点：
+   该结构的软件，客户端和服务端都需要编写
+   开发成本较高，维护较为麻烦
+  
+  好处：
+       客户端在本地可以分担一部分运算
+
+2..b/s ： browser/server
+
+   特点：
+     该结构的软件，只开发服务器端，不开发客户端，因为客户端直接由浏览器取代
+     开发成本相对低，维护更为简单
+   缺点：
+         所有运算都要在服务器端完成

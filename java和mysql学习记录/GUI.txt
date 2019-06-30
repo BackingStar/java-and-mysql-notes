@@ -1,0 +1,101 @@
+现在的开发一般都是坐标式布局，这样更加灵活，组件想放哪就放哪
+
+事件监听机制的组成：
+1、事件源
+2、事件对象
+3、监听机制
+4、处理方式
+
+public class Dema{
+   public static void main(String[] args){
+          Frame f=new Frame("my frame");//设置窗口和标题
+         // f.setSize(500,400);
+         // f.setLocation(400,200);//等价于下面一句话
+          f.setBounds(400,200,500,400);//设置窗口出现位置和大小
+          f.setLayout(new FlowLayout());//设置流式布局
+          Button but=new Button("一个按钮");//设置一个按钮
+          f.add(but);//添加按钮到窗口中
+          f.addWindowListener(new WindowAdapter(){//添加窗口监听事件//子类
+              @override
+              public void windowClosing(WindowEvent e){//窗口关闭事件
+                      System.exit(0);
+               }
+            
+           });
+           but.addActionLister(new ActionLister(){
+         //按钮上添加一个监听事件，匿名内部类
+                  public void actionperformed(ActionEvent e){
+                         System.exit(0);
+                  }
+
+          });
+         f.setVisible(true);//使窗口可见
+ }
+
+
+}
+
+ ===================================================================
+鼠标监听  键盘监听
+public class MouseAndKey{
+    private Frame f;
+    private TextFiled tf;
+    public MouseAndKey(){
+        init();
+    }
+    private void init(){
+        f=new Frame("演示鼠标和键盘监听");
+        f.setBounds(400,200,500,400);
+        f.setLayout(new FlowLayout());
+        tf=new TextFiled(15);
+        f.add(tf);
+        Button bt=new Button("一个按钮");
+        myevent();
+        f.setVisible(true);
+        
+ 
+    }
+     private void myevent(){
+         f.addWindowLister(new WindowAdapter(){
+               public void windowClosing(WindowEvent e){
+                    System.exit(0);
+               }
+ 
+
+         });
+         bt.addActionListener(new ActionListener(){
+               public void actionPerformed(ActionEvent e){
+         
+                }
+
+         });//鼠标动作和鼠标点击监听，首先执行的是鼠标点击
+         but.addMouseListener(new MouseAdapter(){
+              private int count=1;
+              public void mouseClicked(MouseEvent e){
+                    if(e.getClickCount()==2)//判断鼠标双击
+                   // tf.setText("mouse click..."+count++); 
+                      tf.setText("mouse double click..."+count++); 
+                   //在文本框里面显示此内容
+                }
+         });
+          tf.addKeyListener(new AdapterListener(){
+               public  void keyPerssed(KeyEvent e){
+                     System.out.println(KeyEvent.getKeyText(e.getKeyCode())+"..."+e.getKeyCode());//键盘的按下键，以及按下键的键值
+                    int code=e.getKeyCode();
+                    if(code>=KeyEvent.VK_0&&code<=KeyEvent.VK_9){//判断键值是否是数字
+                         System.out.println("必须是数字");
+                          e.consume();//不是使用默认的方法，即只是用刚才定义的方法，即只有是数字才能显示在文本框里面
+                    }
+                    if(e.isControlDown()&&e.getKeyCode()==KeyEvent.VK_ENTER){//判断control和enter 同时按下
+                          System.out.println("enter run..");
+                      }
+                }
+ 
+        });
+
+     }
+     public static void main(String[] args){
+           new MouseAndKey();
+     }
+ 
+}

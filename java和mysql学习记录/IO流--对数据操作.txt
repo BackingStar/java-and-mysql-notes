@@ -1,0 +1,338 @@
+1..
+flush();是将建立的缓冲刷新一次，一个流中可以有多个
+close（）；是将流关闭，但是在关闭之前要刷新一次，一个流中只有一个
+2..
+如果在构造函数中加入 true 可以对文件进行续写。。
+FileWriter fw=new FileWriter("dema.txt",true);
+系统换行 
+public static final String LINE_SEPARATOR=System.getProperty("line.separator");//在任意的地方都能使用，是系统的指令
+
+3..缓冲区 BufferedWriter
+换行符 bufw.newLine();只能在该缓冲区使用，其他地方不能使用。
+缓冲区的关闭 会关闭流，所以用了bufw.close()就不用在写fw.close()；
+4..BufferedReader
+ 特有的方法 bufr.readLine() 是读取一行的，读取一行后自动换行，注意: 换行是以换行符为标志的，而不是有多少行就是多少行
+===========================================================================
+5..
+ 缓冲相当于new 了一个数组的缓冲，这是已经封装好了的自定义缓冲
+
+复制文本：
+public static viod main (String[] args){//自定义缓冲 复制文本
+    FileReader fr=null;
+    FileWriter fw=null;
+    try{
+       fr=new FileReader("test.txt");
+       fw=new FileWriter("copy_test.txt"); 
+       char[] buf=new char[1024];
+        int len=0;
+   while((len=fr.read(buf))!=-1){
+          fw.write(buf,0,len);
+  
+}
+  }catch(Exception e){
+           throw new RuntimeException("读写失败"); 
+} finally{
+   if(fw!=null) 
+      try{
+          fw.close();
+     }catch(IOException e){
+           e.printStackTrace();     
+     } 
+   if(fr!=null) 
+      try{
+          fr.close();
+      }catch(IOException e){
+          e.printStackTrace();     
+}  
+ 
+}
+
+}
+     
+ public static void main(String[] args){//用Buffered缓冲复制文本
+     copy_dema();
+}
+  public static void copy_dema() throws IOException{
+      FileReader  fr= new FileReader("buf.txt");
+      BufferedReader bufr=new BufferedReader(fr);
+      FileWriter  fw=new FileWriter("buf_copy.txt");
+      BufferedWriter bufw=new BufferedWriter(fw);
+      String line=null;
+      while((line=bufr.readline())!=null){
+            bufw.write(line);
+            bufw.newLine();
+            bufw.flush;      
+   }
+       bufr.close();
+       bufw.close();
+}
+=====================================================================
+6..字符流只能处理文字,而字节流可以处理很多文件 
+在字节流中 flush()方法可以不用，因为他是直接操作的
+字节流的数组是 byte[]
+如果不用缓冲，效率非常的低，因为数据是一个一个的字节读取。
+
+字节流的基本操作:
+创建输出流/输入流
+public static void main（String args[]）{
+ dema_write();
+ dema_read();
+}
+public static void dema_write throws IOException{
+  FileOutPutStream fos=new FileOutPutStream("bytedema.txt");
+  fos.write("abcdefg".getBytes());//将字符串转换成字节
+  fos.close();
+}
+public static void dema_read() throws IOExpection {
+   FileInPutStream fis =new FileInPutStream("bytedema.txt");
+   byte[] buf =new byte[1024];
+   int len=0;
+   while((len=fis.read(buf))!=-1){
+       system.out.println(new String(buf,0,len)); 
+} 
+ }
+
+ fis.available();//估测字节的个数
+ byte[] buf =new byte[fis.available()]；
+ fis.read(buf);
+ system.out.println(new String(buf));//此方法慎用，因为字节的个数可能超出想象，只适用于小文件的操作
+
+复制MP3：
+public static void main(String[] args){
+  copy_dema();
+  copy_dema2();
+}
+public static void copy_dema() throws IOException{//自定义缓冲区
+   FileInPutStream fis=new FileInPutStream("c:\\1.mp3");
+   FileOutPutStream fos =new FileOutPutStream("c:\\0.mp3");
+   byte[] buf=new byte[1024];
+   int len=0;
+   while（（len=fis.read(buf)）!=-1）{
+        fos.write(buf,0,len); 
+ }
+    fis.close();
+    fos.close();
+}
+public static void copy_dema2() throws IOException{//系统的缓冲区
+   FileInPutStream fis=new FileInPutStream("c:\\1.mp3");
+   BufferedInPutStream bufis=new FileInPutStream(fis);
+   FileOutPutStream fos =new FileOutPutStream("c:\\0.mp3");
+   BufferedOutPutStream bufos=new FileOutPutStream(fos);
+   
+   int ch=0;
+   while（（ch=bufis.read()）!=-1）{
+        bufos.write(ch); 
+ }
+    bufis.close();
+    bufos.close();
+}
+======================================
+7..
+ 键盘的基本录入
+系统的默认设备 不用关闭，一旦关闭，这个流再也不能用另了。
+ public static void main(String[] args)throws IOException{
+       InPutStream in =System.in;
+          int ch =in.read();
+System.out.println(ch);
+}
+ 
+练习：获取用户键盘录入的数据，并将数据变成大写显示在控制台上，如果用户输入的事over 就结束录入。
+ 思路：因为键盘录入只读取一个字节，要判断是否是over，需要将读取的字符拼成字符串
+       那就需要一个容器，StringBuilder.在用户回车之前将录入的数据变成字符串判断即可
+
+public static void main(String[] args){
+      //创建容器
+     StringBuilder sb=new StringBuilder();
+      //获取键盘读取流
+      InputStream in=System.in;
+       int ch=0;
+    while(（ch=in.read()）!=-1）{
+        //判断是否换行，换行标记不存储
+           if(ch=='\r')
+                continue;
+           if(ch=='\n'){
+               String temp=sb.toString();
+               if("over".equals(temp)){
+                   break;
+                System.out.println(temp.toUpperCase());
+                sb.delete(0,sb.length);
+               }
+               else
+            //将读取的字节存储到StringBuilder中
+                 sb.append((char)ch); 
+            }
+   }
+}
+
+                 转换流
+键盘录入：（原理见图片-字节转换为字符流，字符转换为字节流）
+ 简化：
+public class Dema(){
+ public static void main(String[] args) throws IOException{
+                                             //字节流变成字符流,相当于解码
+      BufferedReader bufr=new BufferedReader(new InPutStreamReade(System.in));
+                                              //字符流变成字节流，相当于编码
+      BufferedWriter bufw=new BufferedReader(new OutPutStreamWriter(System.out));
+      String line=null;
+      while((line=bufr.readLine())!=null){
+           if("over".equals(line))
+               break;
+            bufw.write(line.toUpperCase());
+            bufw.newLine();
+            bufw.flush();
+     }       
+ }
+}
+
+ 需求： 其他的内容都不变，只是变了前面的 
+  1、将键盘输入的数据录入到文件中
+    BufferedReader bufr=new BufferedReader(new InputStreamReade(System.in));                                            
+    BufferedWriter bufw=new BufferedReader(new OutputStreamWriter(new FileOutputStream("a.txt")));
+     2、将文件显示在控制台上
+   BufferedReader bufr=new BufferedReader(new InputStreamReader(new FileInputStream("a.txt")；                                     
+   BufferedWriter bufw=new BufferedReader(new OutputStreamWriter(System.out));
+
+      3、将一个文件复制到另一个文件中
+  BufferedReader bufr=new BufferedReader(new InputStreamReade(new FileInputStream("a.txt"));
+  BufferedWriter bufw=new BufferedReader(new OutputStreamWriter(new FileOutputStream("b.txt"));
+==========================================================================
+8..
+  流的操作规律：
+想要知道开发时使用哪些对象，只需要4个明确
+1、明确源和目的（汇）
+  源：InputStream   Reader 
+  目的： OutputStream   Writer
+2、明确是否是纯文本
+ 源： 是   Reader
+      否   InputStream
+ 目的： 是   Writer
+        否   OutputStream
+3、明确具体的设备
+ 源设备：
+      硬盘：File 
+      键盘：System.in
+      内存：数组
+      网络：socket流
+目的设备：
+      硬盘：File 
+      控制台：System.out
+      内存： 数组
+      网络： Socket流
+4、是否需要其他额外功能
+  1、是否需要高效（缓冲）
+      是 就加上Buffered
+  2、是否需要转换
+     
+
+需求1:复制文本
+     1、明确源和目的
+       源：InputStream  Reader
+       目的： OutputStream  Writer
+    2、是否是纯文本
+       是： 
+          源：Reader
+          目的：Writer
+    3、 明确具体的设备
+      源：硬盘：File
+      目的：硬盘：File
+     FileReader  fr=new FileReader("a.txt");
+     FileWriter  fw=new FileWriter("b.txt");
+    4、 明确是否需要其他功能
+    是，高效
+     BufferedReader bufr= new BufferedReader(new FileReader("a.txt"));
+     BufferedWriter bufw=new BufferedWriter(new FileWriter("b.txt"));
+ 需求2；键盘录入
+     1、明确源和目的
+      源：InputStream  Reader
+      目的： OutputStream  Writer
+     2、明确是否是纯文本
+      是：
+       源：Reader
+       目的：Writer
+    3、明确设备
+      源：键盘：System.in
+      目的：文件：File
+      InputStream  in=System.in;
+      FileWriter fr=newFileWriter("b.txt");
+     4、是否需要额外功能
+      转换 :将字节流转成字符流
+          InputStreamReader  isr=new InputStreamReader(System.in);
+          FileWriter fw=new FileWriter("b.txt");
+       高效：
+          BufferedReader bufr=new BufferedReader(new InputStreamReader(System.in));
+          BufferedWriter  bufw=new BufferedWriter(new FileWriter("b.txt"));
+
+ 需求3、将文本显示在控制台上
+       1、明确源和目的
+       源：InputStream  Reader
+       目的： OutputStream  Writer
+    2、是否是纯文本
+       是： 
+          源：Reader
+          目的：Writer
+    3、 明确具体的设备
+      源： 硬盘：File 
+      目的：控制台  System.out
+     FileReader fr=new FileReader("a.txt");
+     OutputStream out =System.out;
+     4、是否需要额外功能
+      转换： 
+          FileReader fr=new FileReader("a.txt");
+          OutputStreamWriter osw=new OutputStreamWriter(System.out);
+       高效：
+           BufferedReader bufr=new BufferedReader(new FileReader("a.txt");
+           BufferedWriter bufw=new BufferedWriter(new OutputStreamWriter(System.out));
+ 需求4、将键盘录入的数据显示在控制台上
+  1、明确源和目的
+       源：InputStream  Reader
+       目的： OutputStream  Writer
+    2、是否是纯文本
+       是： 
+          源：Reader
+          目的：Writer
+    3、 明确具体的设备
+       源：键盘  System.in
+       目的：控制台   System.out
+       InputStream in= System.in;
+       OutputStream out =System.out;
+    4、是否需要额外的功能 
+      转换：因为都是字节流，但是操作的都是文本数据，字符操作更加便捷
+       InputStreamReader  isr=new InputStreamReader(System.in);
+       OutputStreamWriter  osw=new OutputStreamReader(System.out);
+      高效：
+      BufferedReader  bufr=new BufferedReader(new InputStreamReader(System.in));
+     BufferedWriter  bufw=new BufferedWriter(new OutputStreamWriter(System.out));
+需求5、将中文字符数据按照规定的编码表写入到文件中
+      1、目的 OutputStream  Writer
+      2.纯文本   Writer
+      3.设备：硬盘 File
+  注意：就然已经明确了是使用规定的编码，那就不可以使用FileWriter因为FileWriter内部是使用默认的本地码表，只能使用其父类，OutputStreamWriter接收一个字节输出流对象，那么该对象应该是FileOutputStream
+     OutputStreamWriter osw=new OutputStreamWriter(new FileOutputStream("a.txt",charsetName));
+      高效性：
+BufferedWriter bufw=new BufferedWriter(new OutputStreamWriter(new FileOutputStream("a.txt",charsetName)));
+
+===========================================
+9、转换流的编码
+ 转换流的默认编码是JBK，但是我们可以通过转换流来定义其他的编码方式。
+  
+public static void main (String[] args) throws IOException{
+       OutputStreamWriter osw=new OutputStreamWriter(new FileOutputStream("jbk_1.txt"，"utf-8"));//用UTF-8编码  //如果不写，就视为默认，即为jbk
+        osm.write("你好");
+        osm.close();
+       
+          
+}
+public static void main(String[] args) throws IOException{
+       InputStreamReader isr=new InputStreamReader(new FileInputStream       ("jbk.txt","utf-8"));//用UTF-8解码
+       char[] buf=new char[10];
+       int len=isr.read(buf);
+       String str=new String(buf,0,len);
+       System.out.println(str);
+       isr.close();
+}
+
+什么时候使用转换流呢？
+  源或目的对应的设备是字节流，但是操作的却是文本数据，可以使用转换作为桥梁，提高对文件操作的便捷
+一旦操作文本涉及到具体的制定编码时，必须使用转换流。
+
+

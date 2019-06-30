@@ -1,0 +1,190 @@
+1.. 
+可以将一个已经存在的，或者不存在的文件或者目录封装成File 对象
+File f1=new File("c:\\abc\\a.txt");
+File f2=new File("c:\\","abc\\a.txt");
+File f=new File("c:\\");
+File f3=new File(f,"abc\\a.txt");
+File f4=new  File("c:"+File.separator+"abc"+File.separator+"a.txt");
+ //File.separator 代表分隔符
+2..================================================
+文件的功能
+1..获取
+ 
+ File file=new File("a.txt");
+  String name=file.getName();//获取文件名
+   String abspath=file.getAbsolutePath()://获取绝对路径
+   String  path =file.getPath();//获取相对路径
+   long len=file.length();//获取文件大小
+   long  time=file.lastModified();//获取最后修改时间--毫秒值
+   DateFormat dateformat=DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.LONG);
+   String str_time= dateformat.format(date);//具体日期和时间
+  file.getParent();//获取目录
+
+2..====文件的创建和删除
+  （1）、文件的创建
+  File file=new File("file.txt");
+  boolean b=file.creatNewFile();//创建一个文件，和输出流不一样，如果存在则不能创建，只有不存在才能创建
+    （2） 文件的删除
+   boolean b=file.delete();//文件删除，如果文件中有内容，则文件不能被删除
+ ======= 文件夹的创建和删除
+（1） 文件夹的创建
+   File dir=new File("abc");
+   boolean b=dir.mkdir();
+(2)  文件夹的删除
+     boolean b=dir.delete();
+ (3)  文件夹的多目录创建
+    File dir=new File("abc\\q\\d\\ad\\e");//创建多级目录
+    boolean  b=dir.mkdirs();
+    b.delete(); //此时，删除的只是最底层文件
+ 3、（1）文件的判断
+     File file=new File("aa.txt");
+     boolean b=file.exists();//判断是否存在
+     boolean b=file.isFile();//在判断是否是文件时，最好先判断是否存在
+     boolean b=file.isDirectory(); //判断是否是目录
+   （2） 文件的重命名
+       File f1=new File("c:\\a.mp3");
+       File f2-=new File("c：\\b.mp3");
+       boolean b=f1.renameTo(f2);
+    (3) 系统根目录
+    File[] files=File.listRoots();//获取系统根目录
+     for(File file:files){
+          System.out.println(file);
+ }
+     （4） 获取盘的空间
+      File file= new File("d:\\");
+       file.getFreeSpace(); //获取剩余空间
+        file.getTotal;Space();//获取磁盘总的空间
+        file.getUsableSpace();//获取虚拟机可以运行的空间
+    （5）、获取系统目录内容
+   获取当前目录下的文件以及文件夹的名称，包含隐藏文件。调用list方法的File对象中封装的必须是目录。否则会发生NullPointerException,如果访问的系统级目录，也会发生空指针异常。如果目录存在但是没有内容，会返回一个数组，但是长度为0
+       File  file=new File("c:\\");
+       String[] names=file.list();
+       for(String name : names){
+            System.out.println("name");
+}
+
+3=======================================
+  //file.list() 是对当前目录的遍历
+ //file.listFiles();是对当前目录和其子目录的遍历
+
+  过滤器1、==============
+public static void main(String[] args){
+   File dir =new File("c:\\");
+   String[] names=dir.list( new FilterByJava());//只要.java的文件，其他                                                //  都过滤
+   for(String name: names ){
+       System.out.prinrln(name);     
+
+     }
+
+}
+ //创建过滤器,按照文件名称过滤
+  public class FilterByJava implements FilenameFilter{
+        public boolean accept(File dir,String name){
+
+           return name.endsWith(".java");//凡是.java的文件都为真
+}
+}
+ =========过滤器1 的改进=======
+  
+创建一个专门的后缀名过滤器
+
+public static void main(String[] args){
+   File dir =new File("c:\\");
+   String[] names=dir.list( new FilterByJava(".txt"));/只需要在此处修改                                  后缀名，就可以得到 只有此后缀名的文件                                             
+   for(String name: names ){
+       System.out.prinrln(name);     
+
+     }
+
+}
+ //创建过滤器,按照文件名称过滤
+  public class FilterByJava implements FilenameFilter{
+     private String suffix;
+     public FilterByJava(String suffix){
+        this.suffix=suffix;
+}
+
+
+        public boolean accept(File dir,String name){
+
+           return name.endsWith(suffix);//凡是suffix的文件都为真
+}
+}
+
+  ============过滤器2、=======
+
+public static void main(String[] args){
+   File dir =new File("c:\\");
+   File[] files=dir.listFiles( new FilterByHidden());// 文件过滤                                             
+   for(File file:files ){
+       System.out.prinrln(file);     
+
+     }
+
+}
+ //创建过滤器，按照文件过滤
+  public class FilterByHidden implements FileFilter{
+        public boolean accept(File pathname){
+
+           return !pathname.isHidden();//返回不是隐藏文件
+}
+}
+============================================
+4、深度遍历
+需求：对指定目录进行所有内容的列出（包含子目录的内容）
+       也可以理解为深度遍历。
+public static void main(String[] args){
+      File dir=new File("d:\\demadir");
+      listAll(dir,0);       
+
+}
+ public static void listAll(File dir,int level){
+        System.out.println(getSpace(level)+dir.getName);
+        level++;
+       File[] files=dir.listFiles();
+        for(int x=0;x<files.length;x++){
+             if(files[x].isDirectory){
+                 listAll(files[x],level);
+              }else
+                  System.out.println(getSpace(level)+files[x].getName);
+}
+
+ }
+private static String getSpace(ine level){
+      StringBuilder sb=new StringBuilder();
+       for(int x=0;x<level;x++){
+            sb.append("    ");
+ }
+
+//法2：(只是格式不一样)
+       StringBuilder sb=new StringBuilder();
+       sb.append("|--");
+        for(int x=0;x<sb.length;x++){
+            sb.insert(0,"|  ");
+            }
+      return sb.toString() ;
+ }
+结果 见图片
+
+==========================================================
+ 5、深度删除文件（删除带有内容的文件）
+  原理：必须从最里面往外删，需要进行深度遍历
+
+ public static void main(String[] args){
+       File dir=new File("e:\\demadir");
+        removeDir(dir);
+}
+ public static void removeDir(File dir){
+         
+    File[] files=dir.listFiles();
+    for(File file:files){
+         if(files.isDirectory){
+             removeDir(file);
+        
+         }else{
+              System.out.println(file+":"+file.delete());
+         }     
+}
+        System.out.println(dir+""+dir.delete());
+ }
+

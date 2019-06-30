@@ -1,0 +1,244 @@
+
+1..反射介绍
+
+JAVA 反射机制是在运行状态中，对任意一个类（class文件），都能够知道这个类的所有属性和方法；
+ 对于任意一个对象，都能够调用它的任意一个方法和属性；
+ 这种动态获取的信息以及动态调用对象的方法功能称为java语言的反射机制。
+
+
+动态获取类中信息，就是java 反射
+可以理解为对类的解剖
+
+如果想要对指定名称的字节码文件进行加载并获取其中的内容并调用
+怎么可以实现呢？
+只是就用到了反射技术
+
+一个已经写好了的应用程序且独立运行了，他对外提供可接口是为了扩展功能
+每一个 都包含了 接口和 配置文件  web.xml
+
+2...Class
+
+反射机制玩的就是 获取字节码文件对象 
+
+class Class{
+  提供获取字节码文件中的内容
+   比如：
+       名称
+       字段
+       构造函数
+        一般函数
+}该类就可以获取字节码文件中的所有内容
+ 那么反射 就是依靠该类完成的
+
+
+3..
+反射机制获取Class对象的三种方式：
+
+一般都是用第三种方法
+
+1.. object类中getClass（）方法
+   想要使用这种 方式，必须要明确具体的类，并创建对象
+   麻烦
+      Person p=new Person();
+      Class clazz=P.getClass();
+   
+       Person p1=new Person();
+       Class clazz1=p1.getClass():
+       System.out.println(clazz==clazz1);
+
+2.. 任何数据类型都具备一个静态属性.class来获取去对应的class对象
+     相对简单，但是还是要明确用到类中的静态成员
+      还是不够扩展
+     Class clazz =Person.class;
+     Class clazz1=Person.class;
+     System.out.println(clazz==clazz1);
+
+3..只要通过给定的类的字符串名称就可以获取该类，更为扩展
+    可以用Class类中的方法完成
+     该方法就是forName
+   这种方式只要有名称即可，更为方便，扩展性更强
+
+  String className="cn.itcast.bean.Person";//名字必须是包中的全名
+  Class clazz=Class.forName(className);
+  System.out.println(clazz);
+
+4........
+获取Class类中的构造函数
+
+（1..）空参数
+//早期：new 对象的时候，先根据被new 的类的名称找寻该类的字节码文件，并加载进内存，并创建该字节码文件对象，并接着创建该字节文件对应的person对象
+  
+  cn.itcast.bean.Person p=new cn.itcast.bean.Person();
+ 
+
+//现在：
+ String name="cn.itcast.bean.Person";
+ //找寻该名称类文件，并加载进内存，并产生class对象
+  Class clazz=Class.forName(name);
+  //如何产生该类的对象呢？
+  Object obj=clazz.newInstance();
+
+（2..）实参数
+
+cn.itcast.bean.Person p=new cn.itcast.bean.Person("小强"，21);
+
+//* 当获取指定名称对应类中的所体现的对象时,
+     而该对象初始化不使用空参数构造器该怎么办？
+     既然是通过指定的构造函数进行对象的初始化，
+     所以应该先获取到该构造函数，通过字节码文件对象即可完成
+      该方法是：getConstructor(paramterTypes);
+*
+//
+下面这些相当于上面的一句：
+
+String name="cn.itcast.bean.Person";
+//找寻该名称类文件，并加载进内存，并产生Class对象
+ Class clazz= Class.forName(name);
+//获取到了指定的构造函数对象
+ Constructor constructor=clazz.getConstructor(String.class,int.class);
+//通过该构造器对象的newInstance方法进行对象的初始化。
+ Object obj=constructor.newInstance("小明"，38);
+ 
+  5...
+获取字段
+
+ Class clazz=Class.forName("cn.itcast.bean.Person");
+  Field field=null;//clazz.getField("age");//只能获取公有的
+ field =clazz.getDeclaredField("age");//只获取本类的所有，包括私有
+ 
+//对私有字段的访问取消权限检查。暴力访问
+ field.setAccessible(true);
+
+Object obj=clazz.newInstance();
+field.set(obj,89);//修改获取的字段的值
+
+Object o=field.get(obj);
+System.out.println(o);
+
+
+6...
+获取方法
+
+Class clazz=Class.forName("cn.itcast.bean.Person");
+Method[] methods=clazz.getMethods;//只能获取公有的方法
+methods=clazz.getDeclaresMethods();//获取本类的所有方法，包括 私有的
+for(Method method:methods){
+    System.out.println(method);
+ }
+
+  （1..）获取空参数方法
+
+Class clazz=Class.forName("cn.itcast.bean.Person");
+ Method method=clazz.getMethod("show",null);//获取空参数一般方法
+                                //方法名，无参数
+Object obj=clazz.newInstance();
+//使用构造器可以初始化该方法
+Constructor constructor=clazz.getConstructor(String.class,int.class);
+Object obj=constructor.newInstance("小明",35);
+
+method.invoke(obj,null);//方法的修改
+ 
+
+   （2..）获取有参数方法
+Class clazz=Class.forName("cn.itcast.bean.Person");
+Method method=clazz.getMethod("paramMethod",String.class,int.class);
+                               //方法名，参数，参数
+Object obj=clazz.newInstance();
+method.invoke(obj,"小强"，25);
+
+
+
+============================================================
+7...
+
+反射练习
+
+ 只需要修改配置文件 就可以加在程序，不用再去修改源程序
+ 
+包名为： package cn.itcast.reflect.test;
+
+public class ReflectTest{
+   public static void main(String[] args){ 
+       Mainboard mb=newMainboard(); 
+        mb.run();
+   // mb.usePCI(new SoundCard());
+    /* 每次添加一个设备都要修改代码传递一个新创建的对象，能不那个不修改代         码就可以完成这个动作。不用new 来完成，而是只获取其class文件，在内部       实现创建对象的动作
+    */
+   
+    //使用反射机制来加载配置文件
+
+      File configFile=new File("pci.properties");
+      Properties prop=new Properties();
+      FileInputStream fis=new FileInputStream(configFile);
+     
+      prop.load(fis);
+      for(int x=0;x<prop.size();x++){
+
+        String pciName=prop.getProperty("pci"+(x+1));
+
+         Class clazz=Class.forName(pciName);//用Class去加载这个pci类
+         PCI p=(PCI)clazz.newInstance();
+        
+          mb.usePCI(p);
+       }
+       fis.close();
+
+   }
+
+
+}
+
+public class Mainboard{
+        
+       public void run(){
+           System.out.println("Main board run....");
+        }
+       public void usePCI(PCI p){
+            if(p!=null){
+                p.open();
+                p.close();
+               
+            }
+       }
+  }
+
+public interface PCI {
+       public void open();
+       puclic void close();
+  }
+  
+
+ public class SoundCard  implements PCI{
+    public void open(){
+       System.out.println("sound open...");
+    }
+    public void close(){
+        System.out.println("sound close...");
+    }
+  }
+public class NetCard{
+    public void open(){
+       System.out.println("net open...");
+    }
+    public void close(){
+        System.out.println("net close...");
+    }
+
+}
+
+配置文件....
+ pci.properties
+
+ pci1=cn.itcast.reflect.test.Sound
+ pci2=cn.itcast.reflect.test.NetCard
+
+
+
+
+
+运行结果为：
+  main board run...
+  sound open...
+  sound close...
+  net open...
+  net close...

@@ -1,0 +1,18 @@
+1..
+try中 程序执行过程中，如果发现异常，则跳到 catch中对应的陷阱中，然后就跳到执行其他的程序，try中的剩下的程序就不在执行了。而catch之后的其他catch语句也是不在执行，而是执行其他正常的程序。
+2..一般来说，通用陷阱都是写在后面，可能要用的陷阱写在前面。
+  具体的陷阱执行后，就不会在执行其他的陷阱，而是跳到下面的程序。
+
+
+3..自己定义异常的时候，可以先自定义一个异常名字，他继承于RuntimeException异常，在自定义的异常里面，可以写：
+                 public class Ageout extends RuntimeException{
+                      public 异常名（）；
+                      public 异常名（String messge）{
+                                      super( message);   
+                                  }   
+                                    } 
+就是相当于构造方法，当然在其中，也可以什么都不写，只定义一个异常名就行.
+  应用的时候，直接抛出异常就行了  throw Ageout();
+或者直接在方法中声明抛出异常也可以 
+  public void setage() throws Ageout{
+                                   }

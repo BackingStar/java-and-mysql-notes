@@ -1,0 +1,463 @@
+1...
+重写：方法名相同，返回类型相同   （子类有就用子类的，没有就用父类的）
+重载：同一个方法名，有不同的参数
+
+2..
+子类构建对象，先构造父类后构造子类
+方法调用  永远是先在子类中找，没有的话就去找父类
+
+3..abstract
+面向对象： 封装 继承 多态
+  抽象： 必须有子类才能调用对象，抽象类不能new 对象，不能被super调用
+
+4..
+final  不能被继承，方法不能被覆盖，抽象类不能声明为final类
+
+5..工厂设计模式  
+单例模型： 一个类只产生一个对象 
+
+懒汉式：
+  public class Manager{
+	private Manager(){
+           System.out.println("manager...");
+ 	}
+        private static Manager manager=null;
+	public static Manager getManager(){
+	    if(manager==null){
+       		synchronized(Manager.class){
+		    if(manager==null){
+			 manager=new Manager();
+		      }
+		}
+	      }
+	      return manager;
+	}
+	
+
+ }
+饿汉式：
+  public class Manager{
+  	private Manager(){
+	 
+	}
+ 	 private static Manager manager=new Manager();
+ 	public static Manager getManager(){
+     	  return manager;
+	}
+ 
+}
+
+获取单例：
+  public class Test{
+      public static void main(String[] args){
+      	 Manager manager=Manager.getManager();
+	}
+   
+}
+
+6...
+内部类 
+  实例类：  new 外类对象().new  内部类();
+         如： Test t=new Test().new T2();
+  静态类：  new 外类.内部类(); 
+         如：  Test t=new Test().T3();
+
+ 内部类 实例成员不能写静态方法，静态成员可以写静态方法，也可以写实例方法
+
+7...异常
+ Throwable--Error、Exception--RuntimeException
+
+try {}catch(){} finally{}
+
+throw   throws
+
+8..线程
+同步函数锁是固定的 this 
+同步代码块的锁是任意的对象
+
+Thread.currentThread().getName()
+Object类中：  wait()   notify()  notifyAll()
+
+if判断标记，只有一次，会导致不该运行的线程运行了，出现数据错误的情况，
+ while判断标记，解决了线程获取执行权后，是否要执行
+notify() :只能唤醒一个线程，如果本方唤醒了本方，没有意义，而且while判断标记+notify()会导致死锁
+notifyAll() ：解决了本方线程一定会唤醒对方线程的问题
+
+ 将同步和锁封装成了对象，并将操作锁的隐式方法定义到了该对象中
+ lock();获取锁
+ unlock() 释放锁 ，通常需要定义到finally中
+lock();
+一把锁上可以实现多个监视器，await();signal();signalAll();
+Lock lock=new ReentrantLock();
+Condition  a1=lock.new Condition();
+Condition  a2=lock.new Condition();
+
+9..
+ 执行速度方面的比较：
+StringBuilder >（两个都是字符串变量）StringBuffer> String(字符串常量)
+   StringBuilder：线程非安全的
+　 StringBuffer：线程安全的
+1.如果要操作少量的数据用 = String
+2.单线程操作字符串缓冲区下操作大量数据 = StringBuilder
+3.多线程操作字符串缓冲区下操作大量数据 = StringBuffer
+
+
+10..String
+
+11.. 集合框架
+ Collection   list + set
+ Map
+   （1）List  有序（存入和取出的顺序一致），元素都有索引（角标），元素可以重复
+   List:  Vector :内部是数组数据结构，是同步的。增删，查询都很慢
+   	  ArrayList: 内部是数组数据结构，是不同步的。替代了Vector 查询的速度很快
+	 LinkedList: 内部是链表数据结构，是不同步的，增删元素的速度很快
+
+************* ArrayList  **************
+
+Collection coll=new ArrayList();
+coll.add("abc1");
+coll.add("abc2");
+coll.add("abc3");//增
+coll.remove("abc3");//删
+coll.contains("abc3");//查
+
+int a=coll.size();//获取集合的大小
+coll.set(1,"abc8");//改，将1位置上的改为“abc8”
+coll.add(1,"abc9");
+coll.remove(2);
+
+coll.get(0);//获取0位置上的元素
+coll.subList(1,2);//获取子列表，含1 不含2
+
+//Iterator接口是对所有的Collection容器进行元素取出的公共接口
+//迭代器
+for(Iterator it=coll.iterator();it.hasNext();){
+     System.out.println (it.next());
+}
+
+ 
+List list=new ArrayList();
+ListIterator it= list.listIterator();//获取列表迭代器对象
+ // 它可以在实现迭代过程中完成对元素的增删改查
+ //注意：只有list集合才具备该迭代功能
+while (it.hasNext()){
+     Object obj=it.next();
+      if(obj.equals("abc2")){
+	 it.set("abc9");
+      }
+}
+  
+
+********** linkedList *-***************
+
+LinkList link=new LinkList();
+link.addFirst("abc1");
+
+link.addLast("abc2");//增加最后一个
+link.addFirst("abc2");//增加第一个
+
+link.getFirst();//获取第一个，如果为空。抛出异常
+link.getLast();
+link.peekFirst();// 获取第一个，如果为空，返回null
+
+link.removeFirst();//删除第一个
+
+
+队列：
+
+public class LinkedTest{
+  public static void main(String[] args){
+	DuiLie dl=new Duilie();
+	dl.myAdd("abc1");
+	dl.myAdd("abc2");
+	dl.myAdd("abc3");
+	dl.myAdd("abc4");
+	while(!dl.isNull()){
+	   System.out.println(dl.myGet);
+	}
+  }
+
+}
+public class DuiLie{
+   private LinkedList link;
+  public DuiLie(){
+     link=new LinkesList();
+  ]
+  public void myAdd(Object obj){
+      link.addLast(obj);
+ }
+  public Object myGet(){
+     return  link.removeFirst();
+ }
+  public boolean isNull(){
+    return link.isEmpty();
+ }
+}
+
+哈希表： 确定元素是否相同
+   1.判断的是两个元素的哈希值是否相同  ，如果相同，再判断两个对象的内容是否相同
+   2. 判断哈希值相同，其实判断的是对象的hashCode()的方法，判断内容相同，用的是equals方法
+  注意： 如果哈希值不同，是不需要判断equals
+
+自己可以重写hashCode()
+  public int hashCode(){
+   	return name.hashCode()+age*27;
+}
+ ------------------------------------------------------------------  
+ 
+（2）Set   无序，元素不能重复、
+  
+**** 
+hashSet:内部数据结构是哈希表，是不同步的
+          保证集合元素的唯一性：  通过对象的hashCode和equals方法来完成的，如果对象的hashCode值不同，不用判断equals方法，直接存储到哈希表中，如果hashCode相同，则判断equals方法，是否为true，如果为TRUE，则为相同元素，如果为false则为不同元素，进行存储
+  注意： 元素存储到HashSet集合中，必须覆盖hashCode 方法和equals方法
+  HashSet 中没有迭代顺序... 取元素只有迭代器这一种方法..
+  LinkedHashSet 可以保证取出有顺序-- HashSet hash=new LinkedHashSet(); 
+
+ ***** 
+TreeSet:可以对Set集合中的元素进行排序，是不同步的
+   判断元素唯一性的方式： 就是根据比较方法的返回结果是否为0，是0，就是相同元素，不存
+ treeset其实就是根据二叉树 来排序的
+   treeSet 返回的类型只有-1，0，1 根据这个来进行自然排序的。。。默认为0
+如果想让然元素有序的取出，顺序---可以把返回值定义为 1
+                        倒序--- 可以把返回值定义为 -1
+   TreeSet对元素进行排序的方式一：
+    让元素自身具备比较功能，就需要实现comparable接口，覆盖compareTo方法
+     public class Person implements Comparale{
+           public int compareTo(Object o){
+ 		int temp=this.age-o.age;
+  		return temp==0?this.name.commpareTo(p.name):temp;
+            ]
+        }
+    
+    TreeSet对元素进行排序的方式二： 
+ 就是不需要按照对象中具备的自然顺序进行排序，或者对象不具备自然顺序。。
+     让集合自身具备比较功能，定义一个类实现Comparator接口，覆盖compare方法，将该类对象作为参数传递给TreeSet集合的构造函数
+      public class ComparatorByName implements Comparator{
+          public int compare (Object o1,Object o2){
+              temp=o1.getName().compareTo(o2.getName());
+	      return temp==0?o1.getAge()-o2.getAge():temp;
+        //假如要想有序的取出： 可以直接返回： return 1;
+           }
+ 	 }
+需要唯一吗：
+ 需要：Set
+     	需要制定顺序吗：
+	  需要： TreeSet
+	  不需要： HashSet
+	   但是想要一个和存储一致的顺序（有序）：LinkedHashSet
+不需要： List
+	 需要频繁增删吗：
+	   需要： LinkedList
+	    不需要：ArrayList
+
+-----------------------------------------------------------    
+ Map     键值对，保证键的唯一性
+
+   put(key,value);//添加
+   remove(key);//删除
+   containsKey(key); //判断
+   containsValue(value);
+   get (key);//通过键获取值，没有就返回null
+ 
+ ********* 取出map中的所有元素：*********
+ 
+ (1.) 原理： 通过keySet方法获取map中所有键所在的set集合，再通过Set的迭代器获取每一个键，在对每一个键通过map集合的get方法获取其对应的值即可
+
+Map<Integer,String> map=new HashMap<Integer,String>();
+  map.put(8,"wangwu");
+  map.put(2,"zhaoliu");
+  map.put(7,"xiaoqiang");
+  map.put(6,"wangcai");
+
+  Set<Integer> keySet=map.keySet();
+  Iterator<Integer> it=keySet.iterator();
+ 
+ while(it.hasNext()){
+	Integer key=it.next();
+	String value=map.get(key);
+  	System.out.println(key+":"+value);
+ }
+
+ (2.) 另一个方法： entrySet
+  该方法将键和值的映射关系作为对象存储到了Set集合中，而这个映射关系的类型就是 Map.Entry类型
+
+Set<Map.EntrySet<Integer,String>> entrySet=map.entrySet();
+Iterator<Map.EntrySet<Integer,String>> it=entrySet.iterator();
+
+while(it.hasNext()){
+  Map.EntrySet<Integer,String> me=it.next();
+  Integer key=me.getKey();
+  String value=me.getValue();
+ System.out.println(key+":"+value);
+ }
+
+
+(3) 取出所有的value值
+ Collection<String> values=map.values();
+ Iterator<Strign> it=values.iterator();
+ while(it.hasNext()){
+   System.out.println(it.next());
+ }
+
+**************************--------------****************
+
+Map:  常用子类：
+  |-- Hashtable : 内部结构是哈希表，是同步的，不允许null作为键，null作为值
+    -- Properties: 用来存储键值对型的配置文件的信息，可以和IO技术相结合
+  |--HashMap: 内部结构是哈希表，不是同步的，允许null作为键，null作为值
+  |--TreeMap: 内部结构是二叉树，不是同步的，可以对Map集合中的键进行排序
+
+
+练习： 
+   “fdgavcbsacdfs”获取该字符串中，每一个字母出现的次数
+    并打印结果： a(2)b(1)...形式
+ public class Test{
+   public static void main(String[] args){
+ 	String str="fdgavcbsacdfs";
+ 	String s=getCharCount(str);
+	System.out.println(s);
+   }
+   public static String getCharCount(String str){
+      //将字符串变成字符数组
+  	char[] chs=str.toCharArray();
+	//定义Map集合
+  	Map<Character,Integer> map=new TreeMap<Character,Integer>();
+ 	
+	for(in i=0;i<chs.length;i++){
+	  //将数组中的字母作为键去查map表
+	   if(!(chs[i]>='a'&&chs[i]<='z'||chs[i]>='A'&&chs[i]<='Z'))
+	     	continue;
+	 Integer value=map.ger(chs[i]);
+	 int count=1;
+	//判断值是否为null
+	 if(value!=null)
+	    count=value+1;
+	  map.put(chs[i],count);
+	}
+	return mapToString(map);
+ 
+  }
+    private static String mapToString(Map<Character,Integer> map){
+	StringBuilder sb=new StringBuilder();
+	Integer<Character> it=map.keySet().iterator();
+	while(it.hasNext()){
+	  Character key=it.next();
+	  Integer value=map.get(key);
+	  sb.append(key+"("+value+")");
+	}
+	return sb.toString();
+   }
+ }
+ 
+
+12... 泛型
+
+ 将运行时期出现的问题 ClassCastException 转到了编译时期
+ 避免了强制转换的麻烦
+ 
+<> 什么时候用？ 当操作的引用数据类型不确定的时候，使用。<> 就是相当于一个用于接收具体引用数据类型的参数范围
+ 泛型只是在编译时期使用，确保类型的安全，在运行的时候会去掉，生成的class文件中式不带泛型的， 因为为了兼容运行的类加载器
+
+<? extends Person> 泛型上限  接收person类型或者person 的子类型
+<？super Person> 泛型下限     接收Person类型或者person的父类型
+
+13..
+  Collections 里的方法
+1..Collections.sort(list);//排序
+2..Collections.sort(list,new ComparatorByLength());//根据自己建立的比较器排序
+3.Collections.swap(list,i,j);//交换
+4.Collections.binarySearch(list,"cba")；//二半查找法
+5.Collections.replaceAll(list,"cba","nab");//set(indexOf("cba"),"nab")  代替
+6.Collections.shuffle(list);//随机排序
+7.Collections.fill(list,"cc");//全部替换为cc，用于集合重置啊。。。
+8..synchronizedCollection();//返回同步的（线程安全）的collection
+  synchronizedList();
+  synchronizedMap();
+  synchronizedSet(); //返回同步（线程安全的）映射。。。很重要
+
+14..
+数组转为集合：
+   如果数组中的元素为对象，那么转成集合时，直接将数组中的元素作为集合中的元素进行集合存储
+   如果数组中的元素是基本数据类型数组，那么会将该数组作为集合中的元素进行存储 
+ int[] arr={15,55,45,5};
+ List<int[] >list= Arrays.asList(arr);
+
+集合转为数组； 
+可以对集合中的元素操作的方法进行限定，不允许对其进行增删
+   toArray方法需要传入一个指导类型的数组
+   如果长度小于集合的size，那么该方法会创建一个同类型的并和集合相同的size的数组
+    如果长度大于集合的size，那么该方法将会使用指定的数组，存储集合中的元素，其他位置默认为null
+List<String> list=new ArrayList<String>();
+ list.add("abc1");
+list.add("abc2");
+list.add("abc3");
+
+String[] arr=list.toArray(new String[5]);
+
+
+15..
+for each语句：
+格式： for(类型 变量：Collection集合/ 数组）{}
+  必须要有遍历的目标，要么是数组，要么是Collection单列集合
+
+16..
+
+日期：
+ Date date=new Date();
+//日期默认风格
+ DateFormat dateFormat=DateFormat.getDateInstance(DateFormat.Long);
+ //自定义风格
+  dateFormat=new SimpleDateFormat("yyyy--MM--dd");
+ //将日期对象-->日期格式的字符串
+  String str_date=dateFormat.format(date);
+  System.out.println(str_date);
+ 
+日期字符串转为日期对象： 使用 DateFormat类中的parse()方法
+   String str_date="2014--5-4";
+   DateFormat dateFormat=DateFormat.getDateInstance(DateFormat.Long);
+   dateFormat=new SimpleDateFormat("yyyy--MM--dd");
+   Date date=dateFormat.parse(str_date);
+   System.out.println(date);
+
+计算两个日期之间的天数： 2014-2-5到 2015-5-1
+ （1）将日期格式的字符串转为Date对象
+ （2） 将Date对象转成毫秒值
+ （3）相减，在变成天数
+public class DateTest{
+ public static void main(String[] args){
+	String str_date1="2014-2-5";
+	String str_date2="2015-5-1";
+	test(str_date1,str_date2);
+ }
+  public static void test(str_date1,str_date2){
+
+   //将日期格式的字符串转为日期对象
+   DateFormat dateFormat=DateFormat.getDateInstance();
+    dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+    
+    Date date1=dateFormat.parse(str_date1);
+    Date date2=dateFormat.parse(str_date2);
+ 
+    long time1=date1.getTime();
+    long time2=date2.getTime();
+    long time =Math.abs(time1-time2);
+ 
+    int day=(int)(time/1000/60/60/24);
+    System.out.println(day);
+ }
+}
+
+
+日历：
+Calendar c=Calendar.getInstance();
+ c.set(2011,11,20);
+ c.add(Calendar.DAY_OF_MONTH,12）；
+int year= c.get(Calendar.YEAR);
+int month=c.get(Calendar.MONTH)+1;
+int day=c.get(Calendar.DAY_OF_MONTH);
+
+
+17..装饰设计模式
+装饰比继承灵活，
+特点： 装饰类和被装饰类必须所属同一个接口或者父类

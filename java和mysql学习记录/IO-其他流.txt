@@ -1,0 +1,554 @@
+1--
+printStream://主要是其他字节类型的输出
+
+1.提供了打印方法可以对多种数据类型进行打印，并保持数据的表示形式
+2.他不抛出IOException
+
+构造函数：接收三种类型的值
+1.字符串路径
+2.File对象
+3.字节输出流
+public static void main(String[] args){
+       PrintStream out=new PrintStream("print.txt");
+       out.write(97);//只写最低8位//并且是字符
+       out.print(97);//将97先变成字符保持原样将数据打印到目的地。
+       out.close();
+ }
+printWriter://文本文档输出，字符类型的
+
+构造函数：
+1.字符串路径
+2.File对象
+3.字节输出流
+4.字符输出流
+public static void main(String[] args){
+        BufferedReader bufr=new BufferedReader(new InputStreamReader(System.in));
+            //new FileWriter使用new了一个对象，变成了输出流
+            //后面接一个true是为了刷新,相当于out.flush();
+         PrintWriter out=new PrintWriter(new FileWriter("out.txt"),true);
+         String line=null;
+         while(line=bufr.readLine()!=null){
+               if("over".equals(line))        
+                    break;
+               out.println(line.toUpperCase());//转换成大写
+              //out.flush();
+
+         }
+         out.close();
+          bufr.close();
+
+
+ 
+ }
+======================================
+2...
+序列流   SequenceInputStream
+它从输入流的有序集合开始，并从第一个输入流开始读取，直到到达文件末尾，接着从第二个输入流读取，依次类推，直到到达包含的最后一个输入流的文件末尾为止。 
+
+//需要传入一个枚举容器
+
+  需求：将1.txt、2.txt、3.txt文件中的数据合并到一个文件中。
+public static void main(String[] args){
+        Vertor<FileInputStream> v=new Vertor<FileInputStream>();
+        v.add(new FileInputStream("1.txt"));
+        v.add(new FileInputStream("2.txt"));
+        v.add(new FileInputStream("3.txt"));
+        Enumeratino<FileInputStream> en=v.elements();
+        SequenceInputStream  sis=new SequenceInputStream(en);
+        FileOutputStream fos=newFileOutputStream("4.txt");
+        byte[] buf=new byte[1024];
+         int len=0;
+         while((len=sis.read(buf))!=-1){
+               fos.write(buf,0,len);
+
+          fos.close();
+          sis.close();
+ 
+          }
+
+ }
+
+由于Vertor要慎用，因此要找到其他方法
+ArrayList<FileInputStream>  a=new ArrayList<FileInputStream>();
+ for(int x=1;x<=3;x++){
+      a.add(new FileInputStream(x+".txt"));
+
+  }
+   Enumeration<FileInputStream> en=Collections.enumeration(a);
+   SequenceInputStream sis=new SequenceInputStream(en);
+ 代码同上...
+=============================================
+3...
+   文件切割1、
+public class SplitFileDema{
+   private static final int SIZE=1024*1024;
+    public static void main(String[] args){
+      File file=new File("c:\\0.bpm");
+       splitFile(file);
+    }
+     public static void splitFile(File file)throws IOException{
+      //用读取流关联源文件
+     FileInputStream fis=new FileInputStrean(file);
+     //定义一个1M的缓冲区
+    byte[] buf=new byte[SIZE]；
+       //创建目的
+      int len=0;
+       int count=1;
+      FileOutputStream fos=null;
+      File dir=new File("c:\\partfiles");
+      if(!dir.exist())
+          dir.mkdirs();
+       while((len=fis.read(buf))!=-1){
+            fos=new FileOutputStream(new File(dir,(count++)+".part");
+            fos.write(buf,0,len);
+             fos.close();
+
+       }
+        
+      fis.close();
+      fos.close();
+
+  }
+
+  
+ }
+===========================================
+4...
+    文件合并1：
+public class MergeFile{
+public static void main(String[] args) throws IOException{
+      File dir=new File("c:\\partfiles");
+      mergeFile(dir);
+}
+public static void mergeFile(File dir) throws IOException{
+          ArrayList<FileInputStream> al=new ArrayList<FileInputStream>();
+          for(int x=1;x<=3;x++){
+               al.add(new FileInputStream(new File(dir,x+".part")));
+           }
+           Enumeration<FileInputStream> en=collections.enumeration(al);
+           SequenceInputStream sis=new SequenceInputStream(en);
+          FileOutputStream fos=new FileOutputStream(new File(dir,"0.bmp"));
+           int len=0;
+         byte[] buf=new byte[1024];
+         while((len=sis.read(buf))!=-1){
+                fos.write(buf,0,len); 
+          }
+         fos.close();
+          sis.close();
+ }
+ }
+=================================================
+5...
+文件切割2： 
+ 切割文件时，必须记录被切割文件的名称以及切割出来碎片文件的个数，以方便合并。。  这个信息为了进行描述，使用键值对的方式，用到了properties对象。
+
+ public class SplitFileDema_2{
+   private static final int SIZE=1024*1024;
+    public static void main(String[] args){
+      File file=new File("c:\\0.bpm");
+       splitFile_2(file);
+    }
+     public static void splitFile_2(File file)throws IOException{
+      //用读取流关联源文件
+     FileInputStream fis=new FileInputStrean(file);
+     //定义一个1M的缓冲区
+    byte[] buf=new byte[SIZE]；
+       //创建目的
+      int len=0;
+       int count=1;
+      FileOutputStream fos=null;
+     //建立一个properties集合
+     properties prop=new properties();
+
+      File dir=new File("c:\\partfiles");
+      if(!dir.exist())
+          dir.mkdirs();
+       while((len=fis.read(buf))!=-1){
+            fos=new FileOutputStream(new File(dir,(count++)+".part");
+            fos.write(buf,0,len);
+             fos.close();
+
+       }
+     //将被切割文件的信息保存到prop集合中
+      prop.setProperty("partcount",count+"");
+      prop.setProperty("filename",file.getName());
+      fos=new FileOutputStream(new File(dir,count+".properties"));
+     //将prop集合的数据存储到文件中
+       prop.store(fos,"save file information");
+        
+      fis.close();
+      fos.close();
+
+  }
+
+  
+ }
+==================================================
+6.... 
+文件合并2、
+public class MergeFile_2{
+public static void main(String[] args) throws IOException{
+      File dir=new File("c:\\partfiles");
+      mergeFile_2(dir);
+}
+public static void mergeFile_2(File dir) throws IOException{
+          File[] files=dir.listFiles(new SuffixFilter(".properties"));
+          if(files.length!=1)
+                throws new RuntimeException(dir+",该目录下没有propterties扩展名的文件或者不唯一");
+         // 记录配置文件对象
+          File confile=files[0];
+       
+        //获取该文件的信息
+          Properties prop=new Properties();
+        FileInputStream fis=new FileInputStream(confile);
+         prop.load(fis);
+         String filename=prop.getProptery("filename");
+         int count=Integer.parseInt(prop.getProperty("partcount"));//将字符串转换成int类型//因为prop返回的是字符串
+ 
+         //获取该目录下的所有碎片文件
+        File[] partFiles=dir.listFiles(new SuffixFilter(".part"));
+        if(partFiles.length !=(count-1))
+           throw new RuntimeException("碎片文件不符合要求，个数不对，因该是"+count+"个");
+         
+        //将碎片文件和流对象关联并存储到集合中
+         ArrayList<FileInputStream> al=new ArrayList<FileInputStream>();
+         for(int x=0;x<partFiles.length;x++){
+               al.add(new FileInputStream(partFiles[x]));
+          }
+           //将多个流合并成一个序列流
+           Enumeration<FileInputStream> en=collections.enumeration(al);
+           SequenceInputStream sis=new SequenceInputStream(en);
+         FileOutputStream fos=new FileOutputStream(new File(dir,filename));
+           int len=0;
+         byte[] buf=new byte[1024];
+         while((len=sis.read(buf))!=-1){
+                fos.write(buf,0,len); 
+          }
+         fos.close();
+          sis.close();
+ }
+   public class SuffixFilter implements FilenameFilter{
+         private String suffix;
+         private SuffixFilter(String suffix){
+                supper()
+                this.suffix=suffix;
+         }
+          return  name.endsWith(suffix);
+   }
+ }
+
+===================================================================
+7....
+ObjectInputStream和ObjectOutputStream
+对象的序列化和反序列化
+
+//对象的后缀名 一般为 .object
+public classDema{
+   public static void main(String[] args){
+          writeObj();
+          reafObj();
+    }
+   public static void writeObj() throw IOException{
+         //对象的序列化.被序列化的对象必须实现serializable接口
+         ObjectOutputStream oos=new ObjectOutputStream(new FileOutputStream("obj.object")); 
+          oos.writeObject(new Person("zhangsan",30)); //只能写入非瞬态和非静态对象。。如果为静态对象（static）或者瞬态对象(transient)，则不能写入
+          oos.close();   
+ 
+}
+    public static void readObj() throw IOException,ClassNotFoundException{
+         //对象的反序列化
+           ObjectInputStream ois=new ObjectInputStream(new FileInputStream("obj.object"));
+           Person p=(Person)ois.readObject();
+           System.out.println(p.getName()+":"+p.getAge());
+           ois.close();
+ }
+     
+}
+}
+// 要想实现对象的序列化 必须实现serializable接口
+
+
+==========Serializable:用于给被序列化的类加入ID号
+                       用于判断类和对象是否在同一个版本
+public  class Person implements serializable/*标记接口*/{
+ private static final long serialVersionUID=95271;//自定义ID号
+//如果不自己定义的话，则是版本默认的，如果在其他的版本上可能会产生不同的ID号，那么反序列就会出现错误
+
+==========transient:非静态数据不想被序列化可以使用该关键字
+      private transient String name;
+      private int age;
+
+     public Person(String name,int age){
+            super();
+            this.name=name;
+            this.age=age;
+     }
+     public String getName(){
+            return name;
+      }
+     public void setName(String name){
+            this.name=name;   
+ }
+     public String getAge(){
+            return age;
+      }
+     public void setAge(int age){
+            this.age=age;   
+ }
+}
+
+
+===========================================================================
+8...
+
+RandomAccessFile: 随机访问文件
+ 他不在IO流里面，是在Object里面
+ 
+//主要通过指针的设置来随机获取读取的位置
+
+特点：
+1.该对象即能读又能写
+2.该对象内部维护了一个byte数组，并通过指针可以操作数组中的元素
+3.可以通过getFilePointer方法获取指针的位置，和通过seek方法设置指针的位置
+4.其实该对象就是将字节输入流和输出流进行了封装
+5.该对象的源或者目的只能是文件，通过构造函数就可以看出
+
+//使用RandomAccessFile对象写入一些人员信息：包括姓名和年龄
+public class Dema{
+public static void main(String[] args){
+
+ }
+ public static void writeFile() throws IOException{
+  //如果文件不存在，则创建，如果文件存在，不创建
+       RandomAccessFile raf=new RandomAccessFile("rance.txt","rw");
+        raf.write("zhangsan".getBytes());
+        raf.writeInt(97);//如果用write()的话只能写入低八位。
+        raf.write("小强".getBytes());
+        raf.writeInt(99);
+        raf.close();
+       
+ }
+public static void readeFile() throws IOException{
+        RandomAccessFile raf=new RandomAccessFile("rance.txt","r");
+       //通过seek设置指针的位置
+        //跳过1*8个字节
+         raf.seek(1*8);//随机的读取，只要指定指针的位置即可
+        byte[] buf=new byte[4];
+        raf.read(buf);
+        String name=new String(buf);
+        int age=raf.readInt();
+        System.out.println("name="+name);
+        System.out.println("age="+age);
+        System.out.println("pos:"+raf.getFilePointer());//获取指针的位置
+        raf.close();
+
+}
+}
+ 
+==================================================================
+9... 
+管道流
+PipedInputStream 和 PipedOutputStream
+
+管道输入必须与管道输出流连接在一起，并且使用不同的线程，如果只是用单线程，可能会造成死锁
+
+public class PipeDema{
+       public static void main(String[] args){
+              PipedInputStream input=new PipedInputStream();
+              PipedOutputStream output=new PipedOutputStream();
+              input.connect(output);//将管道输入流与输入流关联
+              new Thread(new Input(input)).start();
+              new Thread(new Output(output)).start();
+
+ }
+ }
+
+class Input implements Runnable{
+       private PipedInputStream in
+       Input（PipedInputStream in）{
+             this.in=in;
+       } 
+       public void run(){
+           try{
+              byte[] buf=new byte[1024];
+              int len=in.read(buf);
+              String s=new String(buf,0,len);
+              System.out.println("s="+s);
+              in.close();
+            }catch(Exception e){}
+         }
+     
+
+ }
+clas Output implements Runnable{
+       private PipedOutputStream out;
+       Output(PipedOutputStream out){
+             this.out=out;
+        }
+        public void run(){
+            try{
+               Thread.sleep(5000); 
+                out.write("hi，管道来了".getBytes());//字节流输出，所以要将字符流转换成字节流
+             }catch( Exception e){}
+
+      }
+
+ }
+
+=====================================================================
+10...
+ 数据流
+用于操作基本数据类型
+ DataInputStream和 DataOutputStream
+
+public class  DataStream{
+     public static void main(String[] args) throws IOException{
+           writeData();
+           readData();
+  }
+ public static void readData()throws IOExcetion{
+        DataInputStream dis=new DataInputStream(new FileInputStream("data.txt"));
+        String str=dis.readUTF();
+         System.out.println(str);
+ }
+ public static void writeData() throws IOException{
+        DadaOutputStream dos=new DataOutputStream( new FileOutputStream("data.txt"));
+        dos.writeUTF("你好");
+         dos.close();
+}
+     
+ }
+
+======================================================================
+11..
+数组流
+ByteArrayInputStream    ByteArrayOutputStream
+
+//他们自己自带有一个数组，随着存入的数组增长而增长，因此不用建立一个缓冲区
+ 并且 不必关闭流，就算关闭了也没有用
+
+public class ByteArrayStream{
+   public static void main(String[] args){
+        ByteArrayInputStream bis=new ByteArrayInputStream("abcdef".getBytes());
+         ByteArrayOutputStream bos=new ByteArrayOutputStream();
+         int ch=0;
+         while((ch=bis.read())!=-1){
+                bos.write(ch);
+         }
+         System.out.println(bos.toString());
+ }
+
+
+==========================================================
+12...
+编码/解码
+
+字符-->字节  编码
+字节-->字符  解码
+
+GBK ：一个汉字字符是2个字节
+UTF-8： 是3个字节
+
+public class Dema{
+  public static void main(String[] args){
+      String str="你好";
+       // 编码
+      Byte[] buf=str.getBytes("UTF-8");//如果不写，默认是GBK
+      printBytes(buf);
+      //解码
+      String s1=new String(buf,"UTF-8");
+      System.out.println("s1="+s1);
+  }
+    private static void printBytes(Byte[] buf){
+        for(byte b:buf){
+             System.out.println(b+" ");
+        }
+    }
+ }
+
+编码出错，解不了
+解码出错，可能解决
+public class Dema{
+  public static void main(String[] args){
+      String str="你好";
+       // 编码
+      Byte[] buf=str.getBytes("gbk");//如果不写，默认是GBK
+     
+      //解码
+      String s1=new String(buf,"iso8859-1");
+      System.out.println("s1="+s1);//输出？？？？
+      Byte[] buf2=s1.getBytes("iso8859-1");//获取源字节
+      String s2=new String(buf2,"jbk");
+      Sytem.out.println("s2="+s2);//输出“你好”
+  }
+
+//注意：如果是UTF-8可能解决不了，因为解决不了的会改变其码值，再用JBK解码时，由于码值变化，就不能解出源码了
+
+
+联通问题：
+由于联通这两个字与UTF-8的编码方式一样，因此记事本在解析的时候，以为是UTF-8的模式，因此解析出来会出问题。
+
+===============================================================
+
+在JAVA中，字符串"abcd"与字符串"ab你好"的长度是一样的，都是四个字节
+但是对应的字节数不一样，一个汉字占两个字节
+定义一个方法，按照最大的字节数来取子串。
+如：对于"ab你好"，如果取三个字节，那么子串就是ab与"你"的半个
+那么半个就要舍弃。如果取四个字节就是"ab你"，取五个字节还是"ab你"
+
+public class Dema{
+   public static void main(String[] args){
+           String str="ab你好cd谢谢"; 
+            int len=str.getBytes("gbk").length;
+           for(int x=0;x<len;x++){
+               System.out.println("截取"+(x+1)+"个字节的结果是"+"cutStringByByte(str,x+1)");
+            }
+   }
+   public static String cutStringByByte(String str,int len) throws IOException{
+         Byte[] buf=str.gerBytes("gbk");
+         int count=0;
+         for(int x=len-1;x>=0;x--){
+             if(buf[x]<0){
+                 count++;
+              }else{
+                  break;
+              }
+         }
+          if(count%2==0){
+              return new String(buf,0,len,"gbk");
+          }else
+               return new String(buf,0,len,"gbk");
+         
+
+   }
+}
+=======
+使用UTF-8来解决
+public class Dema2{
+   public static void main(String[] args){
+           String str="ab你好cd谢谢"; 
+            int len=str.getBytes("utf-8").length;
+           for(int x=0;x<len;x++){
+               System.out.println("截取"+(x+1)+"个字节的结果是"+"cutStringByUTF-8Byte(str,x+1)");
+            }
+   }
+   public static String cutStringByUTF-8Byte(String str,int len) throws IOException{
+         Byte[] buf=str.gerBytes("utf-8");
+         int count=0;
+         for(int x=len-1;x>=0;x--){
+             if(buf[x]<0){
+                 count++;
+              }else{
+                  break;
+              }
+         }
+          if(count%3==0){
+              return new String(buf,0,len,"utf-8");
+          }elseif(count%3==1)
+               return new String(buf,0,len-1,"utf-8");
+          else
+               return new String(buf,0,len-2,"utf-8");
+         
+
+   }
+}
